@@ -18,53 +18,17 @@ export function logDebug(message: string, error?: unknown): void {
     return;
   }
 
-  // Node.js / Main Process context
   try {
     const timestamp = new Date().toISOString();
     const errorMsg = error instanceof Error 
       ? ` | ERROR: ${error.message}${error.stack ? `\nSTACK: ${error.stack}` : ''}` 
       : error ? ` | ERROR: ${String(error)}` : '';
-    const logMessage = `[${timestamp}] ${message}${errorMsg}\n`;
     
     // Console log for terminal visibility (Safe for both environments)
-    console.log(`[Debug] ${message}`, error || '');
-    
-    // SKIP file logging in Edge Runtime to avoid build errors
-    if (process.env.NEXT_RUNTIME === 'edge') {
-      return;
-    }
-
-    // Dynamic imports for Node.js/Electron context only
-    // This part is skipped during Edge build if guarded properly
-    // or handled by the try/catch if it's a standard Node environment
-    try {
-        // We use standard require ONLY in Node/Electron environments
-        // If this is the browser, this block is unreachable due to the isBrowser check above
-        if (typeof process !== 'undefined' && process.versions && (process.versions as any).node) {
-            const fs = require('fs');
-            const path = require('path');
-            
-            let logDir: string;
-            if ((process.versions as any).electron) {
-                const electron = require('electron');
-                logDir = (electron.app || electron.remote.app).getPath('userData');
-            } else {
-                logDir = process.cwd();
-            }
-            
-            const logPath = path.join(logDir, 'debug.log');
-            
-            if (!fs.existsSync(logDir)) {
-              fs.mkdirSync(logDir, { recursive: true });
-            }
-            
-            fs.appendFileSync(logPath, logMessage);
-        }
-    } catch (ignore) {
-        // Fallback for environments where require is not defined
-    }
+    console.log(`[${timestamp}] ${message}${errorMsg}`);
   } catch (err) {
     // Last resort safety
+    console.error('Logging failed:', err);
   }
 }
 
