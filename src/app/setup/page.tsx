@@ -36,11 +36,16 @@ export default function SetupPage() {
                     const redirectPath = isPlatformMode ? '/' : `/${schoolSlug}`;
                     router.push(redirectPath)
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error("[Setup] Status verification failed:", error)
                 // Even on error, we know the mode from the URL
                 setNeedsSetup(true)
                 setIsChecking(false)
+                
+                // Set debug info if available from the error response
+                if (error.debug) {
+                    (window as any)._SN_DEBUG = error.debug;
+                }
             }
         }
 
@@ -180,6 +185,17 @@ export default function SetupPage() {
                         <Loader2 className="h-6 w-6 text-emerald-400 animate-spin" />
                         <p className="text-emerald-100/60 text-[10px] font-bold uppercase tracking-[0.2em]">Verifying Status</p>
                     </div>
+
+                    {/* Temporary Debug Info for Production */}
+                    {needsSetup && (window as any)._SN_DEBUG && (
+                        <div className="mt-8 p-4 bg-black/40 backdrop-blur border border-white/10 rounded-2xl max-w-sm text-center">
+                            <p className="text-[10px] font-bold text-red-400 uppercase mb-2">Debug Info (Infrastructure Error)</p>
+                            <p className="text-xs text-white/60 mb-2">Available Bindings: {((window as any)._SN_DEBUG.envKeys || []).join(', ') || 'None'}</p>
+                            <p className="text-[10px] text-white/40 leading-relaxed">
+                                If 'DB' is missing above, please link your D1 database to the Pages project in the Cloudflare Dashboard.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         )
