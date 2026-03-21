@@ -15,13 +15,13 @@ export default function SetupPage() {
     useEffect(() => {
         const checkSetupStatus = async () => {
             try {
-                // Detect if we are on the platform root
-                const hostname = window.location.hostname;
-                const platformMode = 
-                    hostname === 'localhost' || 
-                    hostname === 'app.schoolnexus.com' || 
-                    hostname.includes('pages.dev'); // Detect Cloudflare Pages
-                setIsPlatform(platformMode);
+                // Detect mode from URL: /setup (platform) vs /school-slug/setup (school)
+                const pathParts = window.location.pathname.split('/');
+                const isPlatformMode = pathParts.length <= 2 || pathParts[1] === 'setup';
+                const schoolSlug = isPlatformMode ? 'platform' : pathParts[1];
+                
+                setIsPlatform(isPlatformMode);
+                console.log(`[Setup] Mode: ${isPlatformMode ? 'Platform' : 'School (' + schoolSlug + ')'}`);
 
                 console.log("[Setup] Checking system status...")
                 const hasSetup = await setupActions.hasCompletedSetup()
@@ -32,7 +32,8 @@ export default function SetupPage() {
                     setIsChecking(false)
                 } else {
                     console.log("[Setup] Already configured, redirecting to login")
-                    router.push("/")
+                    const redirectPath = isPlatformMode ? '/' : `/${schoolSlug}`;
+                    router.push(redirectPath)
                     // Keep isChecking true to prevent flashing while redirecting
                 }
             } catch (error) {

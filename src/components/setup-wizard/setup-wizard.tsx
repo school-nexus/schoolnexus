@@ -67,19 +67,17 @@ interface SetupWizardProps {
     isPlatform?: boolean
 }
 
-const schoolSteps = [
-    { title: "School Information", icon: School, description: "Branding and contact details" },
-    { title: "Academic Year", icon: Calendar, description: "Year and term configuration" },
-    { title: "System User", icon: User, description: "Administrator account" },
-    { title: "Database Setup", icon: Database, description: "Storage configuration" },
-    { title: "Confirmation", icon: CheckCircle, description: "Review and launch" },
+const platformSteps = [
+    { title: "System Status", icon: Database, description: "Verify database connection" },
+    { title: "Super Admin", icon: User, description: "Platform administrator account" },
+    { title: "Confirmation", icon: CheckCircle, description: "Initialize platform" },
 ];
 
-const platformSteps = [
-    { title: "School Information", icon: School, description: "Branding and contact details" },
+const schoolSteps = [
+    { title: "School Profile", icon: School, description: "Branding and contact details" },
     { title: "Academic Year", icon: Calendar, description: "Year and term configuration" },
-    { title: "System User", icon: User, description: "Administrator account" },
-    { title: "Confirmation", icon: CheckCircle, description: "Review and launch" },
+    { title: "School Admin", icon: User, description: "School administrator account" },
+    { title: "Confirmation", icon: CheckCircle, description: "Finalize onboarding" },
 ];
 
 export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps) {
@@ -158,7 +156,17 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
     // Map step indices to correct component based on mode
     const getStepComponent = () => {
         switch (currentStepData.title) {
-            case "School Information":
+            case "System Status":
+                return <DatabaseSetupStep
+                    data={formData.database}
+                    onUpdate={(val: any) => setFormData(prev => ({ ...prev, database: { ...prev.database, ...val } }))}
+                    onNext={nextStep}
+                    onBack={prevStep}
+                    isInitializing={isInitializing}
+                    isInitialized={isDbInitialized}
+                    onInitialize={handleInitializeDatabase}
+                />;
+            case "School Profile":
                 return <SchoolInfoStep
                     data={formData.schoolInfo}
                     onUpdate={(val: any) => setFormData(prev => ({ ...prev, schoolInfo: { ...prev.schoolInfo, ...val } }))}
@@ -171,22 +179,14 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
                     onNext={nextStep}
                     onBack={prevStep}
                 />;
-            case "System User":
+            case "Super Admin":
+            case "School Admin":
                 return <AdminAccountStep
                     data={formData.adminInfo}
                     onUpdate={(val: any) => setFormData(prev => ({ ...prev, adminInfo: { ...prev.adminInfo, ...val } }))}
                     onNext={nextStep}
                     onBack={prevStep}
-                />;
-            case "Database Setup":
-                return <DatabaseSetupStep
-                    data={formData.database}
-                    onUpdate={(val: any) => setFormData(prev => ({ ...prev, database: { ...prev.database, ...val } }))}
-                    onNext={nextStep}
-                    onBack={prevStep}
-                    isInitializing={isInitializing}
-                    isInitialized={isDbInitialized}
-                    onInitialize={handleInitializeDatabase}
+                    title={currentStepData.title} // Add title prop to customize the step UI
                 />;
             case "Confirmation":
                 return <ConfirmationStep
@@ -194,6 +194,7 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
                     onBack={prevStep}
                     onComplete={handleFinish}
                     isSubmitting={isSubmitting}
+                    isPlatform={isPlatform}
                 />;
             default:
                 return null;

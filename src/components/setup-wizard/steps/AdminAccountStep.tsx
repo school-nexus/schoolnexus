@@ -19,9 +19,10 @@ interface AdminAccountStepProps {
     onUpdate: (data: any) => void
     onNext: () => void
     onBack: () => void
+    title?: string
 }
 
-export function AdminAccountStep({ data, onUpdate, onNext, onBack }: AdminAccountStepProps) {
+export function AdminAccountStep({ data, onUpdate, onNext, onBack, title }: AdminAccountStepProps) {
     const [errors, setErrors] = useState<Record<string, string>>({})
 
     const validate = () => {
@@ -60,7 +61,7 @@ export function AdminAccountStep({ data, onUpdate, onNext, onBack }: AdminAccoun
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="col-span-1 md:col-span-2 space-y-1.5">
                         <Label className="text-xs font-bold text-slate-700 ml-1 flex items-center gap-1.5">
-                            Primary Administrator Name <span className="text-red-500">*</span>
+                            {title === 'Super Admin' ? 'Super Administrator Full Name' : 'Primary Administrator Name'} <span className="text-red-500">*</span>
                         </Label>
                         <div className="relative">
                             <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />

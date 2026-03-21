@@ -22,11 +22,12 @@ interface ConfirmationStepProps {
     onBack: () => void
     onComplete: () => void
     isSubmitting?: boolean
+    isPlatform?: boolean
 }
 
 import { Loader2 } from "lucide-react"
 
-export function ConfirmationStep({ data, onBack, onComplete, isSubmitting }: ConfirmationStepProps) {
+export function ConfirmationStep({ data, onBack, onComplete, isSubmitting, isPlatform = false }: ConfirmationStepProps) {
     return (
         <div className="space-y-6">
             <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
@@ -41,69 +42,73 @@ export function ConfirmationStep({ data, onBack, onComplete, isSubmitting }: Con
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* School Profile Summary */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <School className="h-4 w-4 text-emerald-500" />
-                            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">School Profile</h4>
-                        </div>
-                        <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
-                            <div className="flex items-center gap-4">
-                                {data.schoolInfo.logo ? (
-                                    <img src={`protocol-file://${data.schoolInfo.logo}`} className="h-12 w-12 rounded-xl object-cover" alt="Logo" />
-                                ) : (
-                                    <div className="h-12 w-12 rounded-xl bg-slate-200 flex items-center justify-center">
-                                        <School className="h-6 w-6 text-slate-400" />
-                                    </div>
-                                )}
-                                <div>
-                                    <p className="text-sm font-bold text-slate-900">{data.schoolInfo.name}</p>
-                                    <p className="text-[11px] text-slate-500 italic">"{data.schoolInfo.motto || 'No motto set'}"</p>
-                                </div>
+                    {/* School Profile Summary - ONLY FOR SCHOOL MODE */}
+                    {!isPlatform && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <School className="h-4 w-4 text-emerald-500" />
+                                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">School Profile</h4>
                             </div>
-                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/50">
-                                <div>
-                                    <Label className="text-[10px] text-slate-400 font-bold uppercase">Currency</Label>
-                                    <p className="text-xs font-bold text-slate-700">{data.schoolInfo.currency}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-[10px] text-slate-400 font-bold uppercase">Phone</Label>
-                                    <p className="text-xs font-bold text-slate-700">{data.schoolInfo.phone}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Academic Calendar Summary */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Calendar className="h-4 w-4 text-emerald-500" />
-                            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Academic Year</h4>
-                        </div>
-                        <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
-                            <div>
-                                <p className="text-sm font-bold text-slate-900">Academic Year {data.academicYear.name}</p>
-                                <p className="text-[11px] text-slate-500">{data.academicYear.startDate} to {data.academicYear.endDate}</p>
-                            </div>
-                            <div className="space-y-2 pt-2 border-t border-slate-200/50">
-                                <Label className="text-[10px] text-slate-400 font-bold uppercase">Terms ({data.academicYear.terms.length})</Label>
-                                <div className="space-y-1">
-                                    {data.academicYear.terms.map((term: any, i: number) => (
-                                        <div key={i} className="flex items-center justify-between text-xs">
-                                            <span className="font-medium text-slate-600">{term.name}</span>
-                                            {term.isActive && <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[9px] font-bold">ACTIVE</span>}
+                            <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
+                                <div className="flex items-center gap-4">
+                                    {data.schoolInfo.logo ? (
+                                        <img src={`protocol-file://${data.schoolInfo.logo}`} className="h-12 w-12 rounded-xl object-cover" alt="Logo" />
+                                    ) : (
+                                        <div className="h-12 w-12 rounded-xl bg-slate-200 flex items-center justify-center">
+                                            <School className="h-6 w-6 text-slate-400" />
                                         </div>
-                                    ))}
+                                    )}
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-900">{data.schoolInfo.name}</p>
+                                        <p className="text-[11px] text-slate-500 italic">"{data.schoolInfo.motto || 'No motto set'}"</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/50">
+                                    <div>
+                                        <Label className="text-[10px] text-slate-400 font-bold uppercase">Currency</Label>
+                                        <p className="text-xs font-bold text-slate-700">{data.schoolInfo.currency}</p>
+                                    </div>
+                                    <div>
+                                        <Label className="text-[10px] text-slate-400 font-bold uppercase">Phone</Label>
+                                        <p className="text-xs font-bold text-slate-700">{data.schoolInfo.phone}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Academic Calendar Summary - ONLY FOR SCHOOL MODE */}
+                    {!isPlatform && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Calendar className="h-4 w-4 text-emerald-500" />
+                                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Academic Year</h4>
+                            </div>
+                            <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
+                                <div>
+                                    <p className="text-sm font-bold text-slate-900">Academic Year {data.academicYear.name}</p>
+                                    <p className="text-[11px] text-slate-500">{data.academicYear.startDate} to {data.academicYear.endDate}</p>
+                                </div>
+                                <div className="space-y-2 pt-2 border-t border-slate-200/50">
+                                    <Label className="text-[10px] text-slate-400 font-bold uppercase">Terms ({data.academicYear.terms.length})</Label>
+                                    <div className="space-y-1">
+                                        {data.academicYear.terms.map((term: any, i: number) => (
+                                            <div key={i} className="flex items-center justify-between text-xs">
+                                                <span className="font-medium text-slate-600">{term.name}</span>
+                                                {term.isActive && <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[9px] font-bold">ACTIVE</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Admin Account Summary */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 mb-2">
                             <User className="h-4 w-4 text-emerald-500" />
-                            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Administrator</h4>
+                            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">{isPlatform ? 'Super Administrator' : 'School Administrator'}</h4>
                         </div>
                         <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
                             <div className="flex items-center gap-3">
@@ -122,19 +127,22 @@ export function ConfirmationStep({ data, onBack, onComplete, isSubmitting }: Con
                         </div>
                     </div>
 
-                    {/* Database Summary */}
+                    {/* Database Summary (System Status) */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 mb-2">
                             <Database className="h-4 w-4 text-emerald-500" />
-                            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Database Storage</h4>
+                            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">{isPlatform ? 'System Environment' : 'Database Storage'}</h4>
                         </div>
                         <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold text-slate-900 capitalize">{data.database.mode} Database</span>
-                                <span className="bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold uppercase">SQLite</span>
+                                <span className="text-sm font-bold text-slate-900 capitalize">{isPlatform ? 'Cloudflare Edge' : data.database.mode + ' Database'}</span>
+                                <span className="bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold uppercase">D1 + R2</span>
                             </div>
                             <p className="text-[11px] text-slate-500 leading-relaxed italic">
-                                All data stored locally on this machine. Regular backups are recommended after launch.
+                                {isPlatform 
+                                    ? "Platform-wide resources will be initialized for multi-tenant school scaling."
+                                    : "All data stored within your secure school database partition."
+                                }
                             </p>
                         </div>
                     </div>

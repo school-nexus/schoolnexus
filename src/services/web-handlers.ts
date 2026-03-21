@@ -58,11 +58,12 @@ export const handleWebRequest = async (db: unknown, channel: string, args: unkno
             return await repository.users.getAll(d1, schoolId);
         case 'get-classes':
             return await repository.classes.getAll(d1, schoolId);
-        case 'get-students':
-            return await repository.students.getAll(d1, schoolId);
         case 'has-completed-setup':
-            return await repository.settings.hasCompletedSetup(d1);
+            return await repository.settings.hasCompletedSetup(d1, schoolId);
         case 'mark-setup-completed':
+            if (schoolId === 1) {
+                return await repository.settings.update(d1, 'platform_setup_completed', 'true', 1);
+            }
             return await repository.settings.update(d1, 'setup_completed', 'true', schoolId);
         case 'create-user': {
             const userData = args[0] as any;

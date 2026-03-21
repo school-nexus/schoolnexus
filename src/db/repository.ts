@@ -62,6 +62,17 @@ export const repository = {
                 ...data,
                 passwordHash: hashedPassword,
             }).returning();
+        },
+        hasSuperAdmin: async (db: DrizzleDB) => {
+            try {
+                const result = await db.select({ id: users.id })
+                    .from(users)
+                    .where(eq(users.role, 'super_admin'))
+                    .limit(1);
+                return result.length > 0;
+            } catch (error) {
+                return false;
+            }
         }
     },
     settings: {
@@ -81,12 +92,27 @@ export const repository = {
         },
         hasCompletedSetup: async (db: DrizzleDB, schoolId?: number) => {
             try {
-                // Check if users exist as a proxy for completed setup
-                const result = await db.select({ id: users.id }).from(users).limit(1);
-                return result.length > 0;
+                if (!schoolId || schoolId === 1) { // Platform context
+                    const superAdminExists = await repository.users.hasSuperAdmin(db);
+                    if (!superAdminExists) return false;
+                    
+                    const platformSetting = await db.select().from(settings)
+                        .where(and(eq(settings.key, 'platform_setup_completed'), eq(settings.value, 'true')))
+                        .limit(1);
+                    return platformSetting.length > 0;
+                } else {
+                    // School context
+                    const schoolSetting = await db.select().from(settings)
+                        .where(and(
+                            eq(settings.key, 'setup_completed'), 
+                            eq(settings.value, 'true'),
+                            eq(settings.schoolId, schoolId)
+                        ))
+                        .limit(1);
+                    return schoolSetting.length > 0;
+                }
             } catch (error) {
-                // If table doesn't exist (D1 error), it definitely needs setup
-                console.log("[Repository] Setup check failed (probably missing table), returning false");
+                console.log("[Repository] Setup check failed, returning false");
                 return false;
             }
         }
