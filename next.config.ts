@@ -38,11 +38,6 @@ const nextConfig: NextConfig = {
     ],
   },
   
-  // Force Webpack to bypass Turbopack issues on Windows
-  webpack: (config: any) => {
-    return config;
-  },
-  
   // Compress responses
   compress: true
 };

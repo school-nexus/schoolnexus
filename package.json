@@ -8,8 +8,8 @@
   "main": "dist-electron/electron/main.js",
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack",
-    "build:stable": "cross-env NODE_OPTIONS=\"--max-old-space-size=10240\" next build --webpack",
+    "build": "next build",
+    "build:stable": "cross-env NODE_OPTIONS=\"--max-old-space-size=10240\" next build",
     "deploy:cloudflare": "powershell -ExecutionPolicy Bypass -File scripts/deploy-cloudflare.ps1",
     "start": "next start",
     "lint": "eslint",
