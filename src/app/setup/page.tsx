@@ -20,16 +20,23 @@ export default function SetupPage() {
     useEffect(() => {
         const checkSetupStatus = async () => {
             // 1. URL-Based Mode Detection
-            const pathParts = window.location.pathname.split('/');
-            // /setup -> parts=["", "setup"]
-            // /demo/setup -> parts=["", "demo", "setup"]
-            const isPlatformMode = pathParts.length === 2 && pathParts[1] === 'setup';
-            const detectedSlug = isPlatformMode ? '' : pathParts[1];
+            const pathname = window.location.pathname;
+            // Normalize path by removing trailing slash if present
+            const cleanPath = pathname.replace(/\/$/, "");
+            
+            // /setup -> ["", "setup"] (length 2)
+            // /school/setup -> ["", "school", "setup"] (length 3)
+            const parts = cleanPath.split('/');
+            
+            const isPlatformMode = parts.length === 2 && parts[1] === 'setup';
+            const detectedSlug = isPlatformMode ? '' : parts[1];
             
             setIsPlatform(isPlatformMode)
             setSchoolSlug(detectedSlug)
 
-            console.log(`[Setup] Mode: ${isPlatformMode ? 'PLATFORM' : 'SCHOOL'}, Slug: ${detectedSlug}`);
+            console.log(`[Setup] Detected Path: ${pathname}`);
+            console.log(`[Setup] Mode: ${isPlatformMode ? 'PLATFORM' : 'SCHOOL'}`);
+            console.log(`[Setup] Slug: "${detectedSlug}"`);
 
             try {
                 // 2. Async System Verification
