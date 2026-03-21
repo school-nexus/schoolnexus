@@ -39,6 +39,26 @@ export function middleware(request: NextRequest) {
     
     const requestHeaders = new Headers(request.headers);
 
+    // Support path-based fallback for school access: schoolnexuspro.pages.dev/s/school-slug
+    if (url.pathname.startsWith('/s/')) {
+        const pathParts = url.pathname.split('/');
+        const pathSlug = pathParts[2]; // /s/[slug]
+        if (pathSlug) {
+            console.log(`[Middleware] Path-based School detected: ${pathSlug}`);
+            requestHeaders.set('x-school-slug', pathSlug);
+            
+            // Rewrite internally to the root login/dashboard but keep the header
+            // This allows accessing schools without a custom domain!
+            const newUrl = new URL(request.nextUrl);
+            newUrl.pathname = '/' + pathParts.slice(3).join('/');
+            return NextResponse.rewrite(newUrl, {
+                request: {
+                    headers: requestHeaders,
+                },
+            });
+        }
+    }
+
     if (subdomain && !reserved.includes(subdomain)) {
         // It's a school subdomain!
         console.log(`[Middleware] School detected: ${subdomain}`);
