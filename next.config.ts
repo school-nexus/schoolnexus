@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   // React compiler for better performance
   reactCompiler: true,
   
-  output: 'standalone',
   
   // Experimental features
   experimental: {
