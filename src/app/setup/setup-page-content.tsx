@@ -11,18 +11,19 @@ interface SetupPageContentProps {
 export async function SetupPageContent({ slug }: SetupPageContentProps) {
     const isPlatform = slug === 'platform' || !slug
 
-    console.log(`[Setup Content] Invoking ${isPlatform ? 'Platform' : 'School'} setup logic for slug: ${slug}`)
-
     // 1. Initialize Database Context
     let env: CloudflareEnv;
+    let isContextError = false;
     try {
         env = getRequestContext().env as unknown as CloudflareEnv;
     } catch (e) {
         // Fallback for local dev
-        return <SetupWizardClient isPlatform={isPlatform} schoolSlug={isPlatform ? '' : slug} />
+        isContextError = true;
     }
 
-    if (!env || !env.DB) {
+    const db = (env && env.DB) ? getWebDb(env.DB) : null;
+
+    if (!db && !isContextError) {
         return (
             <div className="h-screen w-full flex flex-col items-center justify-center bg-[#014737] text-white p-8 text-center">
                 <h1 className="text-xl font-bold mb-4 text-emerald-400 uppercase tracking-widest">Infrastructure Error</h1>
@@ -33,29 +34,35 @@ export async function SetupPageContent({ slug }: SetupPageContentProps) {
         )
     }
 
-    const db = getWebDb(env.DB)
-
     // 2. Determine School ID
     let schoolId = 1;
-    if (!isPlatform) {
+    if (!isPlatform && db) {
         const school = await repository.schools.getBySlug(db, slug);
         if (school) {
             schoolId = school.id;
         } else {
-            console.error(`[Setup Content] School not found for slug: ${slug}`);
-            // If the school doesn't exist, we can't onboard it here
             redirect("/setup")
         }
     }
 
     // 3. Verify Setup Status
-    const hasSetup = await repository.settings.hasCompletedSetup(db, schoolId)
-    
-    if (hasSetup) {
-        console.log(`[Setup Content] Setup complete for ${slug}. Redirecting...`)
-        redirect(isPlatform ? "/super-admin" : `/${slug}`)
+    if (db) {
+        const hasSetup = await repository.settings.hasCompletedSetup(db, schoolId)
+        if (hasSetup) {
+            redirect(isPlatform ? "/super-admin" : `/${slug}`)
+        }
     }
 
-    // 4. Render the Wizard
-    return <SetupWizardClient isPlatform={isPlatform} schoolSlug={isPlatform ? '' : slug} />
+    // 4. Render the Wizard with Debug Banner
+    return (
+        <div className="flex flex-col h-screen">
+            {/* DEPLOYMENT PROOF BANNER - REMOVE AFTER VERIFICATION */}
+            <div className="bg-red-600 text-white text-[10px] font-bold py-1 px-4 text-center animate-pulse z-50">
+                ARCHITECTURE VERSION: NATIVE-PATH-V3 | CONTEXT: {isPlatform ? 'PLATFORM' : 'SCHOOL'} | SLUG: {slug} | {isContextError ? 'LOCAL_DEV' : 'CLOUDFLARE'}
+            </div>
+            <div className="flex-1 overflow-hidden">
+                <SetupWizardClient isPlatform={isPlatform} schoolSlug={isPlatform ? '' : slug} />
+            </div>
+        </div>
+    )
 }
