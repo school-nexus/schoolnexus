@@ -27,8 +27,8 @@ export default function LoginPage() {
                 console.log("[Login] Setup status:", hasSetup)
 
                 if (!hasSetup) {
-                    console.log("[Login] Redirecting to setup wizard...")
-                    router.push("/setup")
+                    console.log("[Login] Redirecting to admin setup wizard...")
+                    router.push("/admin-setup")
                     // Do NOT set isVerifyingSystem to false, we want to keep the loader visible until navigation
                     return
                 }
@@ -38,8 +38,8 @@ export default function LoginPage() {
             } catch (err) {
                 console.error("[Login] System verification error:", err)
                 // If it fails, it's likely because the database is not yet ready.
-                // Redirect to setup so the user can see what's wrong or initialize it.
-                router.push("/setup")
+                // Redirect to admin-setup so the user can see what's wrong or initialize it.
+                router.push("/admin-setup")
             }
         }
 

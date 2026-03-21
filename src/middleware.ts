@@ -56,8 +56,8 @@ export function middleware(request: NextRequest) {
     const pathParts = url.pathname.split('/');
     const firstSegment = pathParts[1];
     
-    const systemPaths = ['api', '_next', 'setup', 'super-admin', 'favicon.ico', 'logo.png', 'globals.css', 's'];
-    const reservedRoutes = ['login', 'dashboard', 'teachers', 'students', 'classes', 'subjects', 'exams', 'attendance', 'fees', 'accounts', 'settings', 'reports', 'super-admin', 'setup'];
+    const systemPaths = ['api', '_next', 'setup', 'admin-setup', 'super-admin', 'favicon.ico', 'logo.png', 'globals.css', 's'];
+    const reservedRoutes = ['login', 'dashboard', 'teachers', 'students', 'classes', 'subjects', 'exams', 'attendance', 'fees', 'accounts', 'settings', 'reports', 'super-admin', 'setup', 'admin-setup'];
 
     if (firstSegment && !systemPaths.includes(firstSegment) && !reservedRoutes.includes(firstSegment)) {
         // It's a school slug! e.g., /demo

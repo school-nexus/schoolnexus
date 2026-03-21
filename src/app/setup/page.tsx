@@ -14,17 +14,21 @@ export default function SetupPage() {
 
     useEffect(() => {
         const checkSetupStatus = async () => {
-            // 1. Immediate Mode Detection (Synchronous/Safe)
+            // 1. School Mode Detection (URL mandatory)
             const pathParts = window.location.pathname.split('/');
-            const isPlatformMode = pathParts.length <= 2 || pathParts[1] === 'setup';
-            const schoolSlug = isPlatformMode ? 'platform' : pathParts[1];
+            const schoolSlug = pathParts[1] === 'setup' ? '' : pathParts[1];
             
-            setIsPlatform(isPlatformMode);
-            console.log(`[Setup] Detected Mode: ${isPlatformMode ? 'Platform' : 'School (' + schoolSlug + ')'}`);
+            if (!schoolSlug) {
+                console.log("[Setup] No school slug found, redirecting to platform login")
+                router.push("/")
+                return
+            }
+
+            console.log(`[Setup] Dedicated School Mode: ${schoolSlug}`);
 
             try {
                 // 2. Async System Verification
-                console.log("[Setup] Checking system status...")
+                console.log("[Setup] Checking school setup status...")
                 const hasSetup = await setupActions.hasCompletedSetup()
                 console.log("[Setup] Status:", hasSetup)
 
@@ -32,20 +36,14 @@ export default function SetupPage() {
                     setNeedsSetup(true)
                     setIsChecking(false)
                 } else {
-                    console.log("[Setup] Already configured, redirecting to login")
-                    const redirectPath = isPlatformMode ? '/' : `/${schoolSlug}`;
-                    router.push(redirectPath)
+                    console.log("[Setup] Already configured, redirecting to school login")
+                    router.push(`/${schoolSlug}`)
                 }
             } catch (error: any) {
                 console.error("[Setup] Status verification failed:", error)
-                // Even on error, we know the mode from the URL
+                // Even on error, this is a school setup route
                 setNeedsSetup(true)
                 setIsChecking(false)
-                
-                // Set debug info if available from the error response
-                if (error.debug) {
-                    (window as any)._SN_DEBUG = error.debug;
-                }
             }
         }
 
