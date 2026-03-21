@@ -10,45 +10,41 @@ import { Loader2 } from "lucide-react"
 
 export default function SetupPage() {
     const router = useRouter()
+    
+    // 1. Synchronous URL-Based Mode Detection (Safer for initial render)
+    const [isPlatform, setIsPlatform] = useState(false)
+    const [schoolSlug, setSchoolSlug] = useState<string>("")
     const [isChecking, setIsChecking] = useState(true)
     const [needsSetup, setNeedsSetup] = useState(false)
-    const [isPlatform, setIsPlatform] = useState(false)
-
     const [debugInfo, setDebugInfo] = useState<any>(null)
-    const [schoolSlug, setSchoolSlug] = useState<string>("")
 
     useEffect(() => {
+        // Run detection once on mount
+        const pathname = window.location.pathname;
+        const cleanPath = pathname.replace(/\/$/, "");
+        const parts = cleanPath.split('/');
+        
+        // Exact root /setup check
+        const isPlatformMode = cleanPath === '/setup';
+        const detectedSlug = isPlatformMode ? '' : parts[1];
+        
+        console.log(`[Setup] Booting in ${isPlatformMode ? 'PLATFORM' : 'SCHOOL'} mode`);
+        console.log(`[Setup] Path: ${pathname}, Slug: "${detectedSlug}"`);
+        
+        setIsPlatform(isPlatformMode)
+        setSchoolSlug(detectedSlug)
+
         const checkSetupStatus = async () => {
-            // 1. URL-Based Mode Detection
-            const pathname = window.location.pathname;
-            // Normalize path by removing trailing slash if present
-            const cleanPath = pathname.replace(/\/$/, "");
-            
-            // /setup -> ["", "setup"] (length 2)
-            // /school/setup -> ["", "school", "setup"] (length 3)
-            const parts = cleanPath.split('/');
-            
-            const isPlatformMode = parts.length === 2 && parts[1] === 'setup';
-            const detectedSlug = isPlatformMode ? '' : parts[1];
-            
-            setIsPlatform(isPlatformMode)
-            setSchoolSlug(detectedSlug)
-
-            console.log(`[Setup] Detected Path: ${pathname}`);
-            console.log(`[Setup] Mode: ${isPlatformMode ? 'PLATFORM' : 'SCHOOL'}`);
-            console.log(`[Setup] Slug: "${detectedSlug}"`);
-
             try {
-                // 2. Async System Verification
-                console.log("[Setup] Checking setup status...")
+                console.log("[Setup] Checking system configuration...")
                 const hasSetup = await setupActions.hasCompletedSetup()
-                console.log("[Setup] Status:", hasSetup)
+                console.log("[Setup] Configuration Status:", hasSetup)
 
                 if (!hasSetup) {
                     setNeedsSetup(true)
                     setIsChecking(false)
                 } else {
-                    console.log("[Setup] Already configured, redirecting...")
+                    console.log("[Setup] Already initialized, redirecting...")
                     router.push(isPlatformMode ? "/super-admin" : `/${detectedSlug}`)
                 }
             } catch (error: any) {
@@ -59,10 +55,7 @@ export default function SetupPage() {
             }
         }
 
-        const timer = setTimeout(() => {
-            checkSetupStatus()
-        }, 100)
-
+        const timer = setTimeout(checkSetupStatus, 100)
         return () => clearTimeout(timer)
     }, [router])
 
