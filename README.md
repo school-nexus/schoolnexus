@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# School Nexus Web Application
 
-## Getting Started
+The web frontend for School Nexus Academy built with Next.js 16 and React 19.
 
-First, run the development server:
+## 🚀 Features
 
+- **Modern UI**: Beautiful, responsive interface with Tailwind CSS
+- **Component Library**: Radix UI components for accessibility
+- **Animations**: Smooth transitions with Framer Motion
+- **State Management**: Efficient state handling with Zustand
+- **Type Safety**: Full TypeScript support
+- **Electron Integration**: Desktop app capabilities
+
+## 🛠️ Development
+
+### Getting Started
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Run development server
 pnpm dev
-# or
-bun dev
+
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Available Scripts
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+- `pnpm lint` - Run ESLint
+- `pnpm type-check` - Run TypeScript type checking
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+apps/web/
+├── src/
+│   ├── app/              # Next.js App Router
+│   │   ├── (dashboard)/  # Dashboard layouts and pages
+│   │   ├── api/          # API routes
+│   │   ├── login/        # Login page
+│   │   ├── setup/        # Setup wizard
+│   │   ├── layout.tsx    # Root layout
+│   │   └── page.tsx      # Home page
+│   ├── components/       # React components
+│   │   ├── layout/       # Layout components
+│   │   ├── setup-wizard/ # Setup wizard components
+│   │   ├── ui/           # UI components
+│   │   └── ...
+│   ├── context/          # React context providers
+│   ├── db/               # Database integration
+│   ├── hooks/            # Custom React hooks
+│   ├── lib/              # Utility libraries
+│   └── types/            # TypeScript types
+├── public/               # Static assets
+├── tests/                # Test files
+├── package.json          # Package configuration
+└── tsconfig.json         # TypeScript configuration
+```
 
-## Learn More
+## 🎨 UI Components
 
-To learn more about Next.js, take a look at the following resources:
+### Component Library
+- **Button** - Primary and variant buttons
+- **Card** - Content containers
+- **Input** - Form inputs
+- **Dialog** - Modal dialogs
+- **Dropdown** - Dropdown menus
+- **Table** - Data tables with sorting
+- **Toast** - Notification system
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Design System
+- **Colors**: Emerald-based color palette
+- **Typography**: Clean, readable fonts
+- **Spacing**: Consistent spacing system
+- **Breakpoints**: Responsive design breakpoints
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔧 Configuration
 
-## Deploy on Vercel
+### Environment Variables
+```env
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
+JWT_SECRET="your-jwt-secret"
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Next.js Config
+```javascript
+// next.config.js
+module.exports = {
+  reactStrictMode: true,
+  experimental: {
+    serverComponentsExternalPackages: ['better-sqlite3'],
+  },
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🧪 Testing
+
+```bash
+# Run unit tests
+pnpm test:unit
+
+# Run E2E tests
+pnpm test:e2e
+
+# Run tests with coverage
+pnpm test:coverage
+```
+
+## 🚀 Deployment
+
+### Vercel
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy
+vercel
+```
+
+### Other Platforms
+- Netlify
+- AWS
+- DigitalOcean
+- Custom Node.js server
+
+## 📱 Electron Desktop App
+
+The web app can be packaged as a desktop application using Electron:
+
+```bash
+# Development
+pnpm electron-dev
+
+# Build
+pnpm electron-build
+```
+
+## 🤝 Contributing
+
+See the main project contributing guidelines.
+
+## 📄 License
+
+MIT License - see main project LICENSE file.

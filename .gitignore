@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# build
+/dist
+/dist-electron
+
+# database
+*.db
+*.sqlite
+
+# logs
+*.log

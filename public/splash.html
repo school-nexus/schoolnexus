@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Nexus Starting...</title>
+    <style>
+        :root {
+            --primary: #10b981;
+            --bg-dark: #1a1a2e;
+            --bg-darker: #131322;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--bg-dark), var(--bg-darker));
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            border-radius: 12px;
+            -webkit-app-region: drag;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            z-index: 10;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite ease-in-out;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin: 0;
+            background: linear-gradient(to right, #ffffff, #a7f3d0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .loader-container {
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-value {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            box-shadow: 0 0 10px var(--primary);
+            animation: loading 2s infinite ease-in-out;
+        }
+
+        .status-text {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+
+
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <img src="./assets/icon.png" alt="School Nexus Logo" class="logo"
+                onerror="this.src='./icon.png'; this.onerror=null;">
+        </div>
+
+        <h1>School Nexus</h1>
+
+        <div class="loader-container">
+            <div class="progress-bar">
+                <div class="progress-value"></div>
+            </div>
+            <div class="status-text">Initializing...</div>
+        </div>
+    </div>
+
+    <script>
+        // Simple loading messages
+        const messages = [
+            "Initializing...",
+            "Loading database...",
+            "Preparing interface...",
+            "Almost ready..."
+        ];
+
+        let i = 0;
+        const statusEl = document.querySelector('.status-text');
+        const progressBar = document.querySelector('.progress-value');
+
+        // Update messages and progress
+        const interval = setInterval(() => {
+            if (statusEl) statusEl.textContent = messages[i];
+            
+            // Update progress bar
+            if (progressBar) {
+                const progress = ((i + 1) / messages.length) * 100;
+                progressBar.style.width = progress + '%';
+            }
+            
+            i = (i + 1) % messages.length;
+        }, 800);
+
+        // Clear interval after 4 seconds (assuming app loads)
+        setTimeout(() => {
+            clearInterval(interval);
+            if (statusEl) statusEl.textContent = "Ready!";
+            if (progressBar) progressBar.style.width = "100%";
+        }, 3200);
+    </script>
+</body>
+</html>

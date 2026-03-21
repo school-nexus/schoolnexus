@@ -1,0 +1,5 @@
+export * from "./SchoolInfoStep"
+export * from "./AcademicYearStep"
+export * from "./AdminAccountStep"
+export * from "./DatabaseSetupStep"
+export * from "./ConfirmationStep"

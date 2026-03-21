@@ -1,0 +1,7 @@
+{
+  "status": "init",
+  "type": "frontend",
+  "scope": "all",
+  "localEndpoint": "http://localhost:3000/",
+  "serverMode": "development"
+}
