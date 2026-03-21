@@ -80,10 +80,15 @@ export const repository = {
             }
         },
         hasCompletedSetup: async (db: DrizzleDB, schoolId?: number) => {
-            // If schoolId is not provided, we check for ANY user or ANY school profile
-            // as a proxy for setup completion for the platform
-            const userCount = await db.select({ count: sql`count(*)` }).from(users);
-            return (userCount[0] as any).count > 0;
+            try {
+                // Check if users exist as a proxy for completed setup
+                const result = await db.select({ id: users.id }).from(users).limit(1);
+                return result.length > 0;
+            } catch (error) {
+                // If table doesn't exist (D1 error), it definitely needs setup
+                console.log("[Repository] Setup check failed (probably missing table), returning false");
+                return false;
+            }
         }
     },
     academicYears: {

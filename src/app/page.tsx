@@ -37,8 +37,9 @@ export default function LoginPage() {
                 setIsVerifyingSystem(false)
             } catch (err) {
                 console.error("[Login] System verification error:", err)
-                // Fallback to login form in case of errors (e.g. browser mode)
-                setIsVerifyingSystem(false)
+                // If it fails, it's likely because the database is not yet ready.
+                // Redirect to setup so the user can see what's wrong or initialize it.
+                router.push("/setup")
             }
         }
 
