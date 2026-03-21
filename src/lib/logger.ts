@@ -1,5 +1,6 @@
-import path from 'path';
-import fs from 'fs';
+// Dynamic imports for Node.js/Electron to avoid Edge Runtime build errors
+let nodePath: any = null;
+let nodeFs: any = null;
 
 /**
  * Universal Logger for School Nexus
@@ -30,27 +31,33 @@ export function logDebug(message: string, error?: unknown): void {
     // Console log for terminal visibility
     console.log(`[Debug] ${message}`, error || '');
     
-    // Dynamic require for electron to avoid browser-side build errors
-    let logDir: string;
+    // Dynamic require for Node.js/Electron to avoid browser/edge side build errors
     try {
+        if (!nodePath || !nodeFs) {
+            // We use eval('require') to hide it from bundlers like Turbopack/Vite
+            nodePath = eval('require')('path');
+            nodeFs = eval('require')('fs');
+        }
+        
+        let logDir: string;
         if (typeof process !== 'undefined' && process.versions && process.versions.electron) {
-            // We use eval('require') to hide it from bundlers like Turbopack
             const electron = eval('require')('electron');
             logDir = electron.app.getPath('userData');
         } else {
             logDir = process.cwd();
         }
-    } catch {
-        logDir = process.cwd();
+        
+        const logPath = nodePath.join(logDir, 'debug.log');
+        
+        if (!nodeFs.existsSync(logDir)) {
+          nodeFs.mkdirSync(logDir, { recursive: true });
+        }
+        
+        nodeFs.appendFileSync(logPath, logMessage);
+    } catch (requireErr) {
+        // If require fails (e.g. on Edge/Browser), we just skip file logging
+        // No need to log this error to avoid infinite loops
     }
-    
-    const logPath = path.join(logDir, 'debug.log');
-    
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
-    }
-    
-    fs.appendFileSync(logPath, logMessage);
   } catch (err) {
     console.error('Failed to write to debug.log:', err);
   }
