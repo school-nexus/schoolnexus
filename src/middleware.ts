@@ -38,43 +38,74 @@ export function middleware(request: NextRequest) {
     const reserved = ['app', 'www', 'platform', 'admin', 'mail'];
     
     const requestHeaders = new Headers(request.headers);
-
-    // Support path-based fallback for school access: schoolnexuspro.pages.dev/s/school-slug
-    if (url.pathname.startsWith('/s/')) {
-        const pathParts = url.pathname.split('/');
-        const pathSlug = pathParts[2]; // /s/[slug]
-        if (pathSlug) {
-            console.log(`[Middleware] Path-based School detected: ${pathSlug}`);
-            requestHeaders.set('x-school-slug', pathSlug);
-            
-            // Rewrite internally to the root login/dashboard but keep the header
-            // This allows accessing schools without a custom domain!
-            const newUrl = new URL(request.nextUrl);
-            newUrl.pathname = '/' + pathParts.slice(3).join('/');
-            return NextResponse.rewrite(newUrl, {
-                request: {
-                    headers: requestHeaders,
-                },
-            });
-        }
-    }
-
-    if (subdomain && !reserved.includes(subdomain)) {
-        // It's a school subdomain!
-        console.log(`[Middleware] School detected: ${subdomain}`);
-        requestHeaders.set('x-school-slug', subdomain);
-    } else {
-        // platform or reserved
-        console.log(`[Middleware] Platform mode`);
-        requestHeaders.set('x-school-slug', 'platform');
-    }
-
-    // Return response with Modified Headers
-    return NextResponse.next({
+    const response = NextResponse.next({
         request: {
             headers: requestHeaders,
         },
     });
+
+    // 1. Identify School Context
+    let schoolSlug = '';
+
+    // A. Subdomain Strategy
+    if (subdomain && !reserved.includes(subdomain)) {
+        schoolSlug = subdomain;
+    } 
+
+    // B. Path-based Strategy (e.g., /schoolname/dashboard)
+    const pathParts = url.pathname.split('/');
+    const firstSegment = pathParts[1];
+    
+    const systemPaths = ['api', '_next', 'setup', 'super-admin', 'favicon.ico', 'logo.png', 'globals.css', 's'];
+    const reservedRoutes = ['login', 'dashboard', 'teachers', 'students', 'classes', 'subjects', 'exams', 'attendance', 'fees', 'accounts', 'settings', 'reports', 'super-admin', 'setup'];
+
+    if (firstSegment && !systemPaths.includes(firstSegment) && !reservedRoutes.includes(firstSegment)) {
+        // It's a school slug! e.g., /demo
+        schoolSlug = firstSegment;
+        
+        // Rewrite internally: /demo/dashboard -> /dashboard
+        const newUrl = new URL(request.nextUrl);
+        newUrl.pathname = '/' + pathParts.slice(2).join('/');
+        
+        const rewriteResponse = NextResponse.rewrite(newUrl, {
+            request: {
+                headers: requestHeaders,
+            },
+        });
+        
+        // Persist the school in a cookie
+        rewriteResponse.cookies.set('x-school-slug', schoolSlug, { path: '/', maxAge: 60 * 60 * 24 }); // 24 hours
+        rewriteResponse.headers.set('x-school-slug', schoolSlug);
+        return rewriteResponse;
+    }
+
+    // C. Cookie-based Persistence (for subsequent requests like /dashboard)
+    if (!schoolSlug) {
+        schoolSlug = request.cookies.get('x-school-slug')?.value || '';
+    }
+
+    // 2. Finalize headers
+    if (schoolSlug && !reserved.includes(schoolSlug)) {
+        console.log(`[Middleware] School Context: ${schoolSlug}`);
+        requestHeaders.set('x-school-slug', schoolSlug);
+    } else {
+        console.log(`[Middleware] Platform Mode`);
+        requestHeaders.set('x-school-slug', 'platform');
+    }
+
+    // Apply headers to the response (Next.js 13+ requirement for middleware headers to reach components)
+    const finalResponse = NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
+    
+    // If we have a school slug, ensure it's in the headers
+    if (schoolSlug) {
+        finalResponse.headers.set('x-school-slug', schoolSlug);
+    }
+
+    return finalResponse;
 }
 
 export const config = {
