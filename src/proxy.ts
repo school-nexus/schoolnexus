@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+export const runtime = 'edge';
+
 export default function proxy(request: NextRequest) {
     const url = request.nextUrl;
     const hostname = request.headers.get('host') || '';
