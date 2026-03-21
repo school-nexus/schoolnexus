@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStudentsWebApi } from '@/lib/web-db-api';
 
+export const runtime = 'edge';
+
 export async function GET() {
   try {
     const students = await getStudentsWebApi();
