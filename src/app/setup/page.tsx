@@ -14,15 +14,16 @@ export default function SetupPage() {
 
     useEffect(() => {
         const checkSetupStatus = async () => {
-            try {
-                // Detect mode from URL: /setup (platform) vs /school-slug/setup (school)
-                const pathParts = window.location.pathname.split('/');
-                const isPlatformMode = pathParts.length <= 2 || pathParts[1] === 'setup';
-                const schoolSlug = isPlatformMode ? 'platform' : pathParts[1];
-                
-                setIsPlatform(isPlatformMode);
-                console.log(`[Setup] Mode: ${isPlatformMode ? 'Platform' : 'School (' + schoolSlug + ')'}`);
+            // 1. Immediate Mode Detection (Synchronous/Safe)
+            const pathParts = window.location.pathname.split('/');
+            const isPlatformMode = pathParts.length <= 2 || pathParts[1] === 'setup';
+            const schoolSlug = isPlatformMode ? 'platform' : pathParts[1];
+            
+            setIsPlatform(isPlatformMode);
+            console.log(`[Setup] Detected Mode: ${isPlatformMode ? 'Platform' : 'School (' + schoolSlug + ')'}`);
 
+            try {
+                // 2. Async System Verification
                 console.log("[Setup] Checking system status...")
                 const hasSetup = await setupActions.hasCompletedSetup()
                 console.log("[Setup] Status:", hasSetup)
@@ -34,10 +35,10 @@ export default function SetupPage() {
                     console.log("[Setup] Already configured, redirecting to login")
                     const redirectPath = isPlatformMode ? '/' : `/${schoolSlug}`;
                     router.push(redirectPath)
-                    // Keep isChecking true to prevent flashing while redirecting
                 }
             } catch (error) {
                 console.error("[Setup] Status verification failed:", error)
+                // Even on error, we know the mode from the URL
                 setNeedsSetup(true)
                 setIsChecking(false)
             }

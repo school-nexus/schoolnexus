@@ -15,7 +15,18 @@ export async function POST(request: NextRequest) {
         const env = context.env as unknown as CloudflareEnv;
         
         if (!env || !env.DB) {
-            return NextResponse.json({ error: 'Database binding not found' }, { status: 500 });
+            console.error('[RPC API] Environment/DB Bindings missing!', { 
+                hasContext: !!context,
+                envKeys: env ? Object.keys(env) : [],
+                contextKeys: context ? Object.keys(context) : []
+            });
+            return NextResponse.json({ 
+                error: 'Database binding not found',
+                debug: {
+                    envKeys: env ? Object.keys(env) : [],
+                    hasEnv: !!env
+                }
+            }, { status: 500 });
         }
 
         const db = getWebDb(env.DB);
@@ -26,12 +37,27 @@ export async function POST(request: NextRequest) {
         // Extract school slug from headers (set by middleware)
         const schoolSlug = request.headers.get('x-school-slug') || undefined;
         
+        console.log('[RPC API] Handling web request', { 
+            channel, 
+            schoolSlug, 
+            timestamp: new Date().toISOString(),
+            route: '/api/rpc'
+        });
+
         const result = await handleWebRequest(
             db,
             channel,
             args || [],
             schoolSlug
         );
+        
+        console.log('[RPC API] Web request handled successfully', { 
+            channel, 
+            schoolSlug, 
+            timestamp: new Date().toISOString(),
+            route: '/api/rpc',
+            status: 200
+        });
         
         return NextResponse.json(result);
     } catch (error: any) {

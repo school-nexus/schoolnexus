@@ -28,27 +28,35 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
+import { CreateSchoolModal } from "@/components/super-admin/create-school-modal"
+
 export default function SuperAdminDashboard() {
     const [schools, setSchools] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const fetchSchools = async () => {
+        setIsLoading(true);
+        try {
+            const data = await invokeIPC<any[]>('get-all-schools');
+            if (data) setSchools(data);
+        } catch (error) {
+            console.error("Failed to fetch schools:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchSchools = async () => {
-            try {
-                const data = await invokeIPC<any[]>('get-all-schools');
-                if (data) setSchools(data);
-            } catch (error) {
-                console.error("Failed to fetch schools:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchSchools();
     }, [])
 
-    const handleCreateSchool = async () => {
-        // This would normally open a modal. For now, we'll just show the intent.
-        alert("This will open a school creation wizard.");
+    const handleCreateSchool = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleCreateSuccess = () => {
+        fetchSchools();
     };
 
     return (
@@ -159,21 +167,28 @@ export default function SuperAdminDashboard() {
                                     <TableRow key={school.id} className="hover:bg-slate-50/50">
                                         <TableCell className="font-bold text-slate-900">{school.name}</TableCell>
                                         <TableCell>
-                                            <code className="bg-slate-100 px-2 py-1 rounded text-xs font-medium text-slate-600">
-                                                {school.slug}.schoolnexus.com
-                                            </code>
+                                            <div className="flex flex-col gap-1">
+                                                <code className="bg-slate-100 px-2 py-0.5 rounded text-[10px] font-bold text-slate-500 w-fit">
+                                                    /{school.slug}
+                                                </code>
+                                                <span className="text-[10px] text-slate-400 font-medium">
+                                                    {school.slug}.schoolnexuspro.pages.dev
+                                                </span>
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={school.status === 'Active' ? 'default' : 'secondary'} 
                                                 className={cn(
                                                     "rounded-full px-3 py-0.5 font-bold text-[10px]",
-                                                    school.status === 'Active' ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" : "bg-slate-100 text-slate-600"
+                                                    school.status === 'Active' ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" : 
+                                                    school.status === 'Pending Setup' ? "bg-amber-100 text-amber-700 hover:bg-amber-100" :
+                                                    "bg-slate-100 text-slate-600"
                                                 )}>
                                                 {school.status}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-slate-500 text-sm">{school.createdAt}</TableCell>
-                                        <TableCell className="font-medium text-slate-700">{school.students}</TableCell>
+                                        <TableCell className="text-slate-500 text-xs">{new Date(school.createdAt).toLocaleDateString()}</TableCell>
+                                        <TableCell className="font-medium text-slate-700">{school.students || 0}</TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
                                                 <MoreVertical className="h-4 w-4 text-slate-400" />
@@ -186,6 +201,12 @@ export default function SuperAdminDashboard() {
                     </Card>
                 </main>
             </div>
+
+            <CreateSchoolModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onSuccess={handleCreateSuccess} 
+            />
         </div>
     )
 }

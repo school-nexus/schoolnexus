@@ -22,7 +22,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Deploying to Cloudflare Pages..." -ForegroundColor Yellow
-npx.cmd wrangler pages deploy .vercel/output/static --project-name $ProjectName
+npx.cmd wrangler pages deploy .vercel/output --project-name $ProjectName
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Deployment failed!" -ForegroundColor Red
