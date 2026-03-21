@@ -48,7 +48,7 @@ export const invokeIPC = async <T>(channel: string, ...args: any[]): Promise<T> 
 
     // 2. Web Mode (Cloudflare D1 RPC)
     if (typeof window !== 'undefined') {
-        const isWeb = true; // Temporary flag, will be determined by environment
+        const isWeb = !window.electron;
         if (isWeb) {
             try {
                 const response = await fetch('/api/rpc', {

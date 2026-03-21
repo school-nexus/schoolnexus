@@ -60,6 +60,30 @@ export const handleWebRequest = async (db: unknown, channel: string, args: unkno
             return await repository.classes.getAll(d1, schoolId);
         case 'get-students':
             return await repository.students.getAll(d1, schoolId);
+        case 'has-completed-setup':
+            return await repository.settings.hasCompletedSetup(d1);
+        case 'mark-setup-completed':
+            return await repository.settings.update(d1, 'setup_completed', 'true', schoolId);
+        case 'create-user': {
+            const userData = args[0] as any;
+            return await repository.users.create(d1, { ...userData, schoolId: userData.role === 'super_admin' ? null : schoolId });
+        }
+        case 'authenticate': {
+            const { username, password } = args[0] as any;
+            const user = await repository.users.getByUsername(d1, username);
+            if (user && (user.passwordHash === password)) { // Simplify for now, bcrypt later
+                return user;
+            }
+            return null;
+        }
+        case 'update-academic-year':
+            return await repository.academicYears.update(d1, schoolId, args[0]);
+        case 'update-term':
+            return await repository.terms.update(d1, schoolId, args[0]);
+        case 'initialize-database':
+            return { success: true, message: "Cloudflare D1 is pre-initialized via migrations" };
+        case 'get-current-user':
+            return null; // Handled by session mostly
         // ... add more cases as handlers are migrated
         default:
             console.warn(`[Web Handlers] Channel not handled: ${channel}`);

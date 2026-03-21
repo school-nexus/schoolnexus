@@ -17,7 +17,10 @@ export default function SetupPage() {
             try {
                 // Detect if we are on the platform root
                 const hostname = window.location.hostname;
-                const platformMode = hostname === 'localhost' || hostname === 'app.schoolnexus.com'; // Adjust as needed
+                const platformMode = 
+                    hostname === 'localhost' || 
+                    hostname === 'app.schoolnexus.com' || 
+                    hostname.includes('pages.dev'); // Detect Cloudflare Pages
                 setIsPlatform(platformMode);
 
                 console.log("[Setup] Checking system status...")
