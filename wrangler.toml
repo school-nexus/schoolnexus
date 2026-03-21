@@ -1,6 +1,7 @@
 name = "schoolnexus"
 compatibility_date = "2024-03-21"
 compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
 
 [[d1_databases]]
 binding = "DB"
