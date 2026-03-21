@@ -12,23 +12,26 @@ export default function SetupPage() {
     const [needsSetup, setNeedsSetup] = useState(false)
     const [isPlatform, setIsPlatform] = useState(false)
 
+    const [debugInfo, setDebugInfo] = useState<any>(null)
+    const [schoolSlug, setSchoolSlug] = useState<string>("")
+
     useEffect(() => {
         const checkSetupStatus = async () => {
-            // 1. School Mode Detection (URL mandatory)
+            // 1. URL-Based Mode Detection
             const pathParts = window.location.pathname.split('/');
-            const schoolSlug = pathParts[1] === 'setup' ? '' : pathParts[1];
+            // /setup -> parts=["", "setup"]
+            // /demo/setup -> parts=["", "demo", "setup"]
+            const isPlatformMode = pathParts.length === 2 && pathParts[1] === 'setup';
+            const detectedSlug = isPlatformMode ? '' : pathParts[1];
             
-            if (!schoolSlug) {
-                console.log("[Setup] No school slug found, redirecting to platform login")
-                router.push("/")
-                return
-            }
+            setIsPlatform(isPlatformMode)
+            setSchoolSlug(detectedSlug)
 
-            console.log(`[Setup] Dedicated School Mode: ${schoolSlug}`);
+            console.log(`[Setup] Mode: ${isPlatformMode ? 'PLATFORM' : 'SCHOOL'}, Slug: ${detectedSlug}`);
 
             try {
                 // 2. Async System Verification
-                console.log("[Setup] Checking school setup status...")
+                console.log("[Setup] Checking setup status...")
                 const hasSetup = await setupActions.hasCompletedSetup()
                 console.log("[Setup] Status:", hasSetup)
 
@@ -36,14 +39,14 @@ export default function SetupPage() {
                     setNeedsSetup(true)
                     setIsChecking(false)
                 } else {
-                    console.log("[Setup] Already configured, redirecting to school login")
-                    router.push(`/${schoolSlug}`)
+                    console.log("[Setup] Already configured, redirecting...")
+                    router.push(isPlatformMode ? "/super-admin" : `/${detectedSlug}`)
                 }
             } catch (error: any) {
                 console.error("[Setup] Status verification failed:", error)
-                // Even on error, this is a school setup route
                 setNeedsSetup(true)
                 setIsChecking(false)
+                if (error.debug) setDebugInfo(error.debug)
             }
         }
 
@@ -56,114 +59,90 @@ export default function SetupPage() {
 
     const handleSetupComplete = async (data: SetupWizardData, isInitialized?: boolean) => {
         try {
-            console.log("[Setup] Persisting configuration...")
+            console.log(`[Setup] Persisting ${isPlatform ? 'PLATFORM' : 'SCHOOL'} configuration...`)
 
-            // 0. Initialize fresh database (creates fresh file) only if NOT already done
+            // 0. Initialize fresh database only if NOT already done
             if (!isInitialized) {
                 console.log("[Setup] Running explicit database initialization...")
                 const dbResult = await setupActions.initializeDatabase() as any
-                console.log("[Setup] Database initialization result:", dbResult)
                 if (!dbResult?.success) {
                     throw new Error("Database initialization failed: " + (dbResult?.message || "Unknown error"))
                 }
+            }
+
+            if (isPlatform) {
+                // PLATFORM INITIALIZATION (Super Admin)
+                console.log("[Setup] Creating super admin...")
+                await userActions.create({
+                    fullName: data.adminInfo.fullName,
+                    username: data.adminInfo.username,
+                    email: data.adminInfo.email,
+                    password: data.adminInfo.password,
+                    role: 'super_admin',
+                    isActive: true
+                })
             } else {
-                console.log("[Setup] Database already initialized manually, skipping wipe.")
-            }
+                // SCHOOL INITIALIZATION
+                console.log("[Setup] Creating academic year...")
+                const year = await academicYearActions.update({
+                    name: data.academicYear.name,
+                    startDate: data.academicYear.startDate,
+                    endDate: data.academicYear.endDate,
+                    isActive: true,
+                    status: 'Active'
+                })
 
-            // 1. Create Academic Year
-            console.log("[Setup] Creating academic year...")
-            const year = await academicYearActions.update({
-                name: data.academicYear.name,
-                startDate: data.academicYear.startDate,
-                endDate: data.academicYear.endDate,
-                isActive: true, // First one is always active
-                status: 'Active'
-            })
-            console.log("[Setup] Academic year created:", year)
-
-            // 2. Create Terms linked to Year
-            if (year?.id) {
-                console.log("[Setup] Creating terms...")
-                for (const term of data.academicYear.terms) {
-                    await termActions.update({
-                        academicYearId: year.id,
-                        name: term.name,
-                        startDate: term.startDate,
-                        endDate: term.endDate,
-                        isActive: term.isActive
-                    })
+                if (year?.id) {
+                    console.log("[Setup] Creating terms...")
+                    for (const term of data.academicYear.terms) {
+                        await termActions.update({
+                            academicYearId: year.id,
+                            name: term.name,
+                            startDate: term.startDate,
+                            endDate: term.endDate,
+                            isActive: term.isActive
+                        })
+                    }
                 }
-                console.log("[Setup] Terms created successfully")
+
+                console.log("[Setup] Saving school profile...")
+                await schoolProfileActions.update({
+                    name: data.schoolInfo.name,
+                    phone: data.schoolInfo.phone,
+                    email: data.schoolInfo.email,
+                    address: data.schoolInfo.address,
+                    logo: data.schoolInfo.logo,
+                    motto: data.schoolInfo.motto,
+                    currency: data.schoolInfo.currency,
+                    website: data.schoolInfo.website,
+                    registrationNumber: data.schoolInfo.registrationNumber
+                })
+
+                console.log("[Setup] Creating school admin user...")
+                await userActions.create({
+                    fullName: data.adminInfo.fullName,
+                    username: data.adminInfo.username,
+                    email: data.adminInfo.email,
+                    password: data.adminInfo.password,
+                    role: 'admin',
+                    isActive: true
+                })
             }
 
-            // 3. Save School Profile
-            console.log("[Setup] Saving school profile...")
-            await schoolProfileActions.update({
-                name: data.schoolInfo.name,
-                phone: data.schoolInfo.phone,
-                email: data.schoolInfo.email,
-                address: data.schoolInfo.address,
-                logo: data.schoolInfo.logo,
-                motto: data.schoolInfo.motto,
-                currency: data.schoolInfo.currency,
-                website: data.schoolInfo.website,
-                registrationNumber: data.schoolInfo.registrationNumber
-            })
-            console.log("[Setup] School profile saved")
-
-            // 4. Create Admin User
-            console.log("[Setup] Creating admin user...")
-            await userActions.create({
-                fullName: data.adminInfo.fullName,
-                username: data.adminInfo.username,
-                email: data.adminInfo.email,
-                password: data.adminInfo.password,
-                role: isPlatform ? 'super_admin' : 'admin',
-                isActive: true
-            })
-            console.log("[Setup] Admin user created")
-
-
-            // 5. Mark setup as completed
+            // Common Completion Steps
             console.log("[Setup] Marking setup as completed...")
-            const setupResult = await setupActions.markSetupCompleted()
-            console.log("[Setup] Setup completion result:", setupResult)
+            await setupActions.markSetupCompleted()
             
-            // Verify that setup was actually marked as completed
-            console.log("[Setup] Verifying setup completion status...")
             const isSetupCompleted = await setupActions.hasCompletedSetup()
-            console.log("[Setup] Setup completion verification:", isSetupCompleted)
-            
             if (!isSetupCompleted) {
                 throw new Error("Failed to verify setup completion status")
             }
 
-            console.log("[Setup] Initialization successful.")
-            
-            // Add a small delay to ensure everything is properly saved
+            console.log("[Setup] Initialization successful. Redirecting...")
             await new Promise(resolve => setTimeout(resolve, 1000))
-            
-            console.log("[Setup] Redirecting to login page...")
-            
-            // Try multiple approaches to ensure navigation
-            try {
-                // First try Next.js router
-                router.push("/")
-                console.log("[Setup] Next.js router push completed")
-            } catch (routerError) {
-                console.error("[Setup] Next.js router failed:", routerError)
-                // Fallback: try direct navigation
-                try {
-                    window.location.href = "/"
-                } catch (locationError) {
-                    console.error("[Setup] Direct navigation failed:", locationError)
-                    // Last resort: show success message
-                    alert("Setup completed successfully! Please close and reopen the application to continue.")
-                }
-            }
+            router.push(isPlatform ? "/super-admin" : `/${schoolSlug}`)
         } catch (error) {
             console.error("[Setup] Configuration failed:", error)
-            // Show error to user
             alert("Setup failed: " + (error instanceof Error ? error.message : "Unknown error"))
             throw error
         }
