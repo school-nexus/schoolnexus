@@ -20,7 +20,9 @@ export default function middleware(request: NextRequest) {
 
     const requestHeaders = new Headers(request.headers);
     
-    // 2. Identify Tenant (Pure Path Strategy)
+    // 2. Identify Tenant Slug from Path
+    // Native Strategy: Next.js handles /[slug]/ natively via file system.
+    // Middleware only needs to identify the slug to set the x-school-slug header.
     const pathParts = pathname.split('/').filter(Boolean);
     const firstSegment = pathParts[0];
     
@@ -30,45 +32,28 @@ export default function middleware(request: NextRequest) {
         'settings', 'reports', 'admin-setup', 'platform-setup'
     ];
 
-    let schoolSlug = 'platform';
-    let shouldRewrite = false;
+    let schoolSlug = 'platform'; // Default to Platform/System
 
     if (firstSegment && !reserved.includes(firstSegment)) {
+        // We are within a tenant path context (e.g. /demo/...)
         schoolSlug = firstSegment;
-        shouldRewrite = true;
     }
 
-    // 3. Set Context Headers
+    // 3. Propagate Context Header
+    // CRITICAL: Set on both Request (for Page/API) and Cookie (for Client)
     requestHeaders.set('x-school-slug', schoolSlug);
 
-    // 4. Determine Active Page and Redirection Policy
-    // NOTE: In Next.js Middleware on Cloudflare, we can't easily query D1 synchronous.
-    // Instead, we let the Server Page (/login, /dashboard) handle the setup check.
-    // However, we MUST ensure /[slug]/login rewrites to /login correctly.
+    console.log(`[Middleware] Path: ${pathname} | Resolved Slug: ${schoolSlug}`);
 
-    if (shouldRewrite) {
-        // Internal rewrite: /demo/login -> /login
-        const newUrl = new URL(request.nextUrl);
-        newUrl.pathname = '/' + pathParts.slice(1).join('/') || '/';
-        
-        const response = NextResponse.rewrite(newUrl, {
-            request: {
-                headers: requestHeaders,
-            },
-        });
-        
-        response.cookies.set('x-school-slug', schoolSlug, { path: '/', maxAge: 60 * 60 * 24 });
-        return response;
-    }
-
-    // Platform mode (Root)
     const response = NextResponse.next({
         request: {
             headers: requestHeaders,
         },
     });
+
+    // Mirror to cookie for client components/RPC persistence
+    response.cookies.set('x-school-slug', schoolSlug, { path: '/', maxAge: 60 * 60 * 24 });
     
-    response.headers.set('x-school-slug', 'platform');
     return response;
 }
 
