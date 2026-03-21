@@ -1,146 +1,53 @@
-"use client"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import { LoginClient } from "./login-client"
+import { getWebDb } from "@/db/index-web"
+import { repository } from "@/db/repository"
+import { getRequestContext } from "@cloudflare/next-on-pages"
 
-import { useState, useEffect } from "react"
-import { useAuth } from "@/context/AuthContext"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Loader2, Lock, User, GraduationCap } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
-import { schoolProfileActions, fileActions } from "@/lib/electron"
+export const runtime = 'edge';
 
-export default function LoginPage() {
-    const [isLoading, setIsLoading] = useState(false)
-    const [username, setUsername] = useState("")
-    const [password, setPassword] = useState("")
-    const [logoSrc, setLogoSrc] = useState<string | null>(null)
-    const [schoolName, setSchoolName] = useState("School Nexus")
-    const router = useRouter()
-    const { login } = useAuth()
+export default async function LoginPage() {
+    const headerList = await headers()
+    const schoolSlug = headerList.get('x-school-slug') || 'platform'
+    const isPlatform = schoolSlug === 'platform'
 
-    useEffect(() => {
-        // Fetch school profile for logo and name
-        schoolProfileActions.get().then((profile: any) => {
-            if (profile) {
-                if (profile.logo) {
-                    setLogoSrc(fileActions.getUrl(profile.logo))
-                }
-                if (profile.name) {
-                    setSchoolName(profile.name)
-                }
-            }
-        }).catch(() => { })
-    }, [])
+    // 1. Initialize Database Context
+    let env: CloudflareEnv;
+    try {
+        env = getRequestContext().env as unknown as CloudflareEnv;
+    } catch (e) {
+        // Local dev fallback
+        return <LoginClient isPlatform={isPlatform} schoolSlug={schoolSlug === 'platform' ? '' : schoolSlug} />
+    }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
+    if (!env || !env.DB) {
+        // Fallback to client rendering if DB is missing (will show error in client if needed)
+        return <LoginClient isPlatform={isPlatform} schoolSlug={isPlatform ? '' : schoolSlug} />
+    }
 
-        try {
-            await login(username, password)
-        } catch (error) {
-            // Error is handled in AuthContext
-        } finally {
-            setIsLoading(false)
+    const db = getWebDb(env.DB)
+
+    // 2. Determine School ID
+    let schoolId = 1;
+    if (!isPlatform) {
+        const school = await repository.schools.getBySlug(db, schoolSlug);
+        if (school) {
+            schoolId = school.id;
+        } else {
+            // School doesn't exist, redirect to root login or setup
+            redirect("/login")
         }
     }
 
-    return (
-        <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-emerald-900 via-teal-800 to-emerald-950 relative overflow-hidden">
-            {/* Background Pattern Overlay */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
+    // 3. Verify Setup Status
+    const hasSetup = await repository.settings.hasCompletedSetup(db, schoolId)
+    
+    if (!hasSetup) {
+        console.log(`[Login Server] Setup INCOMPLETE for ${schoolSlug}. Redirecting to setup wizard...`)
+        redirect(isPlatform ? "/setup" : `/${schoolSlug}/setup`)
+    }
 
-            <div className="w-full max-w-[360px] px-4 relative z-10">
-                {/* Header with System Logo */}
-                <div className="flex flex-col items-center space-y-5 mb-5">
-                    <div className="h-32 w-32 flex items-center justify-center overflow-hidden">
-                        {logoSrc ? (
-                            <img
-                                src={logoSrc}
-                                alt={`${schoolName} Logo`}
-                                className="h-full w-full object-contain"
-                            />
-                        ) : (
-                            <img
-                                src="/logo.png"
-                                alt="System Logo"
-                                className="h-full w-full object-contain"
-                            />
-                        )}
-                    </div>
-                    <div className="text-center">
-                        <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-md">
-                            {schoolName}
-                        </h1>
-                    </div>
-                </div>
-
-                {/* Card */}
-                <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
-                    <CardHeader className="p-0">
-                        {/* Kept minimal */}
-                    </CardHeader>
-                    <CardContent className="p-6">
-                        <form onSubmit={handleSubmit} className="flex flex-col space-y-5">
-                            <div className="flex flex-col">
-                                <Label htmlFor="username" className="text-sm text-slate-600 font-medium ml-1 mb-4">Username</Label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                    <Input
-                                        id="username"
-                                        placeholder="Enter your username"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        className="pl-10 h-10 bg-slate-50/50 rounded-lg border-slate-200 focus:bg-white transition-all text-sm"
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex flex-col">
-                                <div className="flex items-center justify-between ml-1 mb-4">
-                                    <Label htmlFor="password" className="text-sm text-slate-600 font-medium">Password</Label>
-                                    <a href="#" className="text-[10px] font-medium text-emerald-600 hover:text-emerald-500">
-                                        Forgot password?
-                                    </a>
-                                </div>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        placeholder="Enter your password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-10 h-10 bg-slate-50/50 rounded-lg border-slate-200 focus:bg-white transition-all text-sm"
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-                            <Button
-                                type="submit"
-                                className="w-full h-10 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:scale-[1.02] rounded-lg text-sm"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Signing in...
-                                    </>
-                                ) : (
-                                    "Sign In"
-                                )}
-                            </Button>
-                        </form>
-                    </CardContent>
-                </Card>
-
-                {/* Footer */}
-                <p className="text-center text-xs text-emerald-200/60 mt-8">
-                    &copy; {new Date().getFullYear()} {schoolName}
-                </p>
-            </div>
-        </div>
-    )
+    // 4. Render the Login UI
+    return <LoginClient isPlatform={isPlatform} schoolSlug={isPlatform ? '' : schoolSlug} />
 }

@@ -3,111 +3,73 @@ import type { NextRequest } from 'next/server';
 
 export const runtime = 'experimental-edge';
 
-export default function proxy(request: NextRequest) {
+export default function middleware(request: NextRequest) {
     const url = request.nextUrl;
-    const hostname = request.headers.get('host') || '';
+    const pathname = url.pathname;
 
-    // Define roots and domains to ignore
-    const PLATFORM_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'schoolnexuspro.pages.dev';
-    
-    // Ignore internal Next.js paths and api
+    // 1. Skip internal paths and assets
     if (
-        url.pathname.startsWith('/_next') || 
-        url.pathname.startsWith('/api') ||
-        url.pathname.startsWith('/favicon.ico') ||
-        url.pathname.startsWith('/logo.png')
+        pathname.startsWith('/_next') || 
+        pathname.startsWith('/api') ||
+        pathname.startsWith('/favicon.ico') ||
+        pathname.startsWith('/logo.png') ||
+        pathname.includes('.') 
     ) {
         return NextResponse.next();
     }
 
-    // Extract subdomain
-    // Example: school1.schoolnexuspro.pages.dev -> school1
-    let subdomain = '';
+    const requestHeaders = new Headers(request.headers);
     
-    if (hostname.endsWith('.' + PLATFORM_DOMAIN)) {
-        subdomain = hostname.replace('.' + PLATFORM_DOMAIN, '');
-    } else if (hostname === PLATFORM_DOMAIN) {
-        subdomain = '';
-    } else if (hostname.includes('localhost')) {
-        // Handle local dev if needed
-        const parts = hostname.split('.');
-        if (parts.length > 1 && parts[parts.length - 1] === 'localhost') {
-            subdomain = parts[0];
-        }
+    // 2. Identify Tenant (Pure Path Strategy)
+    const pathParts = pathname.split('/').filter(Boolean);
+    const firstSegment = pathParts[0];
+    
+    const reserved = [
+        'setup', 'super-admin', 'login', 'dashboard', 'teachers', 'students', 
+        'classes', 'subjects', 'exams', 'attendance', 'fees', 'accounts', 
+        'settings', 'reports', 'admin-setup', 'platform-setup'
+    ];
+
+    let schoolSlug = 'platform';
+    let shouldRewrite = false;
+
+    if (firstSegment && !reserved.includes(firstSegment)) {
+        schoolSlug = firstSegment;
+        shouldRewrite = true;
     }
 
-    // List of reserved subdomains that should NOT be treated as schools
-    const reserved = ['app', 'www', 'platform', 'admin', 'mail'];
-    
-    const requestHeaders = new Headers(request.headers);
-    const response = NextResponse.next({
-        request: {
-            headers: requestHeaders,
-        },
-    });
+    // 3. Set Context Headers
+    requestHeaders.set('x-school-slug', schoolSlug);
 
-    // 1. Identify School Context
-    let schoolSlug = '';
+    // 4. Determine Active Page and Redirection Policy
+    // NOTE: In Next.js Middleware on Cloudflare, we can't easily query D1 synchronous.
+    // Instead, we let the Server Page (/login, /dashboard) handle the setup check.
+    // However, we MUST ensure /[slug]/login rewrites to /login correctly.
 
-    // A. Subdomain Strategy
-    if (subdomain && !reserved.includes(subdomain)) {
-        schoolSlug = subdomain;
-    } 
-
-    // B. Path-based Strategy (e.g., /schoolname/dashboard)
-    const pathParts = url.pathname.split('/');
-    const firstSegment = pathParts[1];
-    
-    const systemPaths = ['api', '_next', 'setup', 'super-admin', 'favicon.ico', 'logo.png', 'globals.css', 's'];
-    const reservedRoutes = ['login', 'dashboard', 'teachers', 'students', 'classes', 'subjects', 'exams', 'attendance', 'fees', 'accounts', 'settings', 'reports', 'super-admin', 'setup'];
-
-    if (firstSegment && !systemPaths.includes(firstSegment) && !reservedRoutes.includes(firstSegment)) {
-        // It's a school slug! e.g., /demo
-        schoolSlug = firstSegment;
-        
-        // Rewrite internally: /demo/dashboard -> /dashboard
+    if (shouldRewrite) {
+        // Internal rewrite: /demo/login -> /login
         const newUrl = new URL(request.nextUrl);
-        newUrl.pathname = '/' + pathParts.slice(2).join('/');
+        newUrl.pathname = '/' + pathParts.slice(1).join('/') || '/';
         
-        const rewriteResponse = NextResponse.rewrite(newUrl, {
+        const response = NextResponse.rewrite(newUrl, {
             request: {
                 headers: requestHeaders,
             },
         });
         
-        // Persist the school in a cookie
-        rewriteResponse.cookies.set('x-school-slug', schoolSlug, { path: '/', maxAge: 60 * 60 * 24 }); // 24 hours
-        rewriteResponse.headers.set('x-school-slug', schoolSlug);
-        return rewriteResponse;
+        response.cookies.set('x-school-slug', schoolSlug, { path: '/', maxAge: 60 * 60 * 24 });
+        return response;
     }
 
-    // C. Cookie-based Persistence (for subsequent requests like /dashboard)
-    if (!schoolSlug) {
-        schoolSlug = request.cookies.get('x-school-slug')?.value || '';
-    }
-
-    // 2. Finalize headers
-    if (schoolSlug && !reserved.includes(schoolSlug)) {
-        console.log(`[Middleware] School Context: ${schoolSlug}`);
-        requestHeaders.set('x-school-slug', schoolSlug);
-    } else {
-        console.log(`[Middleware] Platform Mode`);
-        requestHeaders.set('x-school-slug', 'platform');
-    }
-
-    // Apply headers to the response (Next.js 13+ requirement for middleware headers to reach components)
-    const finalResponse = NextResponse.next({
+    // Platform mode (Root)
+    const response = NextResponse.next({
         request: {
             headers: requestHeaders,
         },
     });
     
-    // If we have a school slug, ensure it's in the headers
-    if (schoolSlug) {
-        finalResponse.headers.set('x-school-slug', schoolSlug);
-    }
-
-    return finalResponse;
+    response.headers.set('x-school-slug', 'platform');
+    return response;
 }
 
 export const config = {

@@ -1,187 +1,68 @@
-"use client"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import { SetupWizardClient } from "./setup-wizard-client"
+import { getWebDb } from "@/db/index-web"
+import { repository } from "@/db/repository"
+import { getRequestContext } from "@cloudflare/next-on-pages"
+import { Loader2 } from "lucide-react"
 
 export const runtime = 'edge';
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { SetupWizard, SetupWizardData } from "@/components/setup-wizard"
-import { setupActions, userActions, academicYearActions, termActions, schoolProfileActions } from "@/lib/electron"
-import { Loader2 } from "lucide-react"
+export default async function SetupPage() {
+    const headerList = await headers()
+    const schoolSlug = headerList.get('x-school-slug') || 'platform'
+    const isPlatform = schoolSlug === 'platform'
 
-export default function SetupPage() {
-    const router = useRouter()
-    
-    // 1. Synchronous URL-Based Mode Detection (Safer for initial render)
-    const [isPlatform, setIsPlatform] = useState(false)
-    const [schoolSlug, setSchoolSlug] = useState<string>("")
-    const [isChecking, setIsChecking] = useState(true)
-    const [needsSetup, setNeedsSetup] = useState(false)
-    const [debugInfo, setDebugInfo] = useState<any>(null)
+    console.log(`[Setup Server] Entering ${isPlatform ? 'Platform' : 'School'} setup for slug: ${schoolSlug}`)
 
-    useEffect(() => {
-        // Run detection once on mount
-        const pathname = window.location.pathname;
-        const cleanPath = pathname.replace(/\/$/, "");
-        const parts = cleanPath.split('/');
-        
-        // Exact root /setup check
-        const isPlatformMode = cleanPath === '/setup';
-        const detectedSlug = isPlatformMode ? '' : parts[1];
-        
-        console.log(`[Setup] Booting in ${isPlatformMode ? 'PLATFORM' : 'SCHOOL'} mode`);
-        console.log(`[Setup] Path: ${pathname}, Slug: "${detectedSlug}"`);
-        
-        setIsPlatform(isPlatformMode)
-        setSchoolSlug(detectedSlug)
-
-        const checkSetupStatus = async () => {
-            try {
-                console.log("[Setup] Checking system configuration...")
-                const hasSetup = await setupActions.hasCompletedSetup()
-                console.log("[Setup] Configuration Status:", hasSetup)
-
-                if (!hasSetup) {
-                    setNeedsSetup(true)
-                    setIsChecking(false)
-                } else {
-                    console.log("[Setup] Already initialized, redirecting...")
-                    router.push(isPlatformMode ? "/super-admin" : `/${detectedSlug}`)
-                }
-            } catch (error: any) {
-                console.error("[Setup] Status verification failed:", error)
-                setNeedsSetup(true)
-                setIsChecking(false)
-                if (error.debug) setDebugInfo(error.debug)
-            }
-        }
-
-        const timer = setTimeout(checkSetupStatus, 100)
-        return () => clearTimeout(timer)
-    }, [router])
-
-    const handleSetupComplete = async (data: SetupWizardData, isInitialized?: boolean) => {
-        try {
-            console.log(`[Setup] Persisting ${isPlatform ? 'PLATFORM' : 'SCHOOL'} configuration...`)
-
-            // 0. Initialize fresh database only if NOT already done
-            if (!isInitialized) {
-                console.log("[Setup] Running explicit database initialization...")
-                const dbResult = await setupActions.initializeDatabase() as any
-                if (!dbResult?.success) {
-                    throw new Error("Database initialization failed: " + (dbResult?.message || "Unknown error"))
-                }
-            }
-
-            if (isPlatform) {
-                // PLATFORM INITIALIZATION (Super Admin)
-                console.log("[Setup] Creating super admin...")
-                await userActions.create({
-                    fullName: data.adminInfo.fullName,
-                    username: data.adminInfo.username,
-                    email: data.adminInfo.email,
-                    password: data.adminInfo.password,
-                    role: 'super_admin',
-                    isActive: true
-                })
-            } else {
-                // SCHOOL INITIALIZATION
-                console.log("[Setup] Creating academic year...")
-                const year = await academicYearActions.update({
-                    name: data.academicYear.name,
-                    startDate: data.academicYear.startDate,
-                    endDate: data.academicYear.endDate,
-                    isActive: true,
-                    status: 'Active'
-                })
-
-                if (year?.id) {
-                    console.log("[Setup] Creating terms...")
-                    for (const term of data.academicYear.terms) {
-                        await termActions.update({
-                            academicYearId: year.id,
-                            name: term.name,
-                            startDate: term.startDate,
-                            endDate: term.endDate,
-                            isActive: term.isActive
-                        })
-                    }
-                }
-
-                console.log("[Setup] Saving school profile...")
-                await schoolProfileActions.update({
-                    name: data.schoolInfo.name,
-                    phone: data.schoolInfo.phone,
-                    email: data.schoolInfo.email,
-                    address: data.schoolInfo.address,
-                    logo: data.schoolInfo.logo,
-                    motto: data.schoolInfo.motto,
-                    currency: data.schoolInfo.currency,
-                    website: data.schoolInfo.website,
-                    registrationNumber: data.schoolInfo.registrationNumber
-                })
-
-                console.log("[Setup] Creating school admin user...")
-                await userActions.create({
-                    fullName: data.adminInfo.fullName,
-                    username: data.adminInfo.username,
-                    email: data.adminInfo.email,
-                    password: data.adminInfo.password,
-                    role: 'admin',
-                    isActive: true
-                })
-            }
-
-            // Common Completion Steps
-            console.log("[Setup] Marking setup as completed...")
-            await setupActions.markSetupCompleted()
-            
-            const isSetupCompleted = await setupActions.hasCompletedSetup()
-            if (!isSetupCompleted) {
-                throw new Error("Failed to verify setup completion status")
-            }
-
-            console.log("[Setup] Initialization successful. Redirecting...")
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            router.push(isPlatform ? "/super-admin" : `/${schoolSlug}`)
-        } catch (error) {
-            console.error("[Setup] Configuration failed:", error)
-            alert("Setup failed: " + (error instanceof Error ? error.message : "Unknown error"))
-            throw error
-        }
+    // 1. Initialize Database Context
+    let env: CloudflareEnv;
+    try {
+        env = getRequestContext().env as unknown as CloudflareEnv;
+    } catch (e) {
+        console.warn("[Setup Server] Could not get request context, likely local dev without bindings.")
+        // In local dev without getRequestContext, we fall through to the wizard
+        return <SetupWizardClient isPlatform={isPlatform} schoolSlug={schoolSlug === 'platform' ? '' : schoolSlug} />
     }
 
-    if (isChecking) {
+    if (!env || !env.DB) {
         return (
-            <div className="h-screen w-full flex items-center justify-center bg-[#014737] relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-950 opacity-90" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-
-                <div className="relative z-10 flex flex-col items-center gap-6">
-                    <div className="h-24 w-24 flex items-center justify-center overflow-hidden">
-                        <img src="/logo.png" className="h-full w-full object-contain animate-pulse" alt="Logo" />
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="h-6 w-6 text-emerald-400 animate-spin" />
-                        <p className="text-emerald-100/60 text-[10px] font-bold uppercase tracking-[0.2em]">Verifying Status</p>
-                    </div>
-
-                    {/* Temporary Debug Info for Production */}
-                    {needsSetup && (window as any)._SN_DEBUG && (
-                        <div className="mt-8 p-4 bg-black/40 backdrop-blur border border-white/10 rounded-2xl max-w-sm text-center">
-                            <p className="text-[10px] font-bold text-red-400 uppercase mb-2">Debug Info (Infrastructure Error)</p>
-                            <p className="text-xs text-white/60 mb-2">Available Bindings: {((window as any)._SN_DEBUG.envKeys || []).join(', ') || 'None'}</p>
-                            <p className="text-[10px] text-white/40 leading-relaxed">
-                                If 'DB' is missing above, please link your D1 database to the Pages project in the Cloudflare Dashboard.
-                            </p>
-                        </div>
-                    )}
+            <div className="h-screen w-full flex flex-col items-center justify-center bg-[#014737] text-white p-8 text-center">
+                <h1 className="text-xl font-bold mb-4 text-emerald-400 uppercase tracking-widest">Infrastructure Error</h1>
+                <p className="max-w-md opacity-70 mb-8 leading-relaxed">
+                    Database binding (D1) was not found in the current environment. Please ensure you have linked a D1 database in the Cloudflare Dashboard.
+                </p>
+                <div className="p-4 bg-black/20 rounded-xl border border-white/5 font-mono text-xs opacity-50">
+                    Expected Binding: DB
                 </div>
             </div>
         )
     }
 
-    if (!needsSetup) return null
+    const db = getWebDb(env.DB)
 
-    return <SetupWizard onComplete={handleSetupComplete} isPlatform={isPlatform} />
+    // 2. Determine School ID
+    let schoolId = 1;
+    if (!isPlatform) {
+        const school = await repository.schools.getBySlug(db, schoolSlug);
+        if (school) {
+            schoolId = school.id;
+        } else {
+            console.error(`[Setup Server] School not found for slug: ${schoolSlug}`);
+            // If the school doesn't exist, we can't onboard it. 
+            // This might happen if someone types a random slug.
+            redirect("/setup") // Fallback to platform setup or generic error
+        }
+    }
+
+    // 3. Verify Setup Status
+    const hasSetup = await repository.settings.hasCompletedSetup(db, schoolId)
+    
+    if (hasSetup) {
+        console.log(`[Setup Server] Setup already complete for ${schoolSlug}. Redirecting...`)
+        redirect(isPlatform ? "/super-admin" : `/${schoolSlug}`)
+    }
+
+    // 4. Render the Wizard
+    return <SetupWizardClient isPlatform={isPlatform} schoolSlug={isPlatform ? '' : schoolSlug} />
 }
-
