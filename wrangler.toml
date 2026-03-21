@@ -1,0 +1,12 @@
+name = "schoolnexus"
+compatibility_date = "2024-03-21"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "school-nexus-db"
+database_id = "PASTE_D1_ID_HERE"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "school-nexus-storage"
