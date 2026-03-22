@@ -9,8 +9,8 @@ interface SetupPageContentProps {
 }
 
 export function SetupPageContent({ slug }: SetupPageContentProps) {
-    // Platform if slug is literally 'platform' or if it's missing (root)
-    const isPlatform = slug === 'platform' || !slug || slug === 'null';
+    // Platform if slug is platform/setup/missing
+    const isPlatform = slug === 'platform' || slug === 'setup' || !slug || slug === 'null';
     
     console.log("[Setup Page] Context Check:", { slug, isPlatform });
     

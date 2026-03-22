@@ -66,6 +66,7 @@ const schoolSteps = [
     { title: "School Profile", icon: School, description: "Branding and contact details" },
     { title: "Academic Year", icon: Calendar, description: "Year and term configuration" },
     { title: "School Admin", icon: User, description: "School administrator account" },
+    { title: "Database Setup", icon: Database, description: "Storage configuration" },
     { title: "Confirmation", icon: CheckCircle, description: "Finalize onboarding" },
 ];
 
@@ -145,7 +146,8 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
     // Map step indices to correct component based on mode
     const getStepComponent = () => {
         switch (currentStepData.title) {
-            case "System Status":
+            case "Database Setup":
+            case "System Status": // Reuse logic for both
                 return <DatabaseSetupStep
                     data={formData.database}
                     onUpdate={(val: any) => setFormData(prev => ({ ...prev, database: { ...prev.database, ...val } }))}
@@ -220,7 +222,7 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
                                 idx === currentStep ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200" :
                                     idx < currentStep ? "bg-white border-emerald-500 text-emerald-500" :
                                         "bg-white border-slate-200 text-slate-400 group-hover:border-slate-300"
-                            )}>
+                                )}>
                                 {idx < currentStep ? (
                                     <CheckCircle className="h-5 w-5" />
                                 ) : (
