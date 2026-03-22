@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { Suspense, useMemo } from 'react';
 
+export const runtime = 'edge';
 
 // 1. Platform Views (Root Level)
 const LandingPage = dynamic(() => import('../landing-page-content'), { ssr: false });
