@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { LoginClient } from "./login-client"
+import { LoginClient } from "@/app/login/login-client"
 import { useRouter } from "next/navigation"
 
 interface LoginPageContentProps {
