@@ -8,9 +8,9 @@ binding = "DB"
 database_name = "school-nexus-db"
 database_id = "0c7e2517-ca46-4bd7-99a7-421ced6c1b70"
 
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "school-nexus-assets"
+# [[r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "school-nexus-assets"
 
 [dev]
 port = 3000
