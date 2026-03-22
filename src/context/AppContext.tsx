@@ -27,21 +27,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(true)
         try {
             const years = await academicYearActions.getAll()
-            setAllYears(years)
-            const currentYear = years.find((y: any) => y.isActive)
-            setActiveYear(currentYear || null)
-
-            if (currentYear) {
-                const terms = await termActions.getByYear(currentYear.id)
-                setAllTerms(terms)
-                const currentTerm = terms.find((t: any) => t.isActive)
-                setActiveTerm(currentTerm || null)
-            } else {
-                setAllTerms([])
-                setActiveTerm(null)
+            if (years && Array.isArray(years)) {
+                setAllYears(years)
+                const currentYear = years.find((y: any) => y.isActive)
+                setActiveYear(currentYear || null)
+    
+                if (currentYear) {
+                    const terms = await termActions.getByYear(currentYear.id)
+                    setAllTerms(terms || [])
+                    const currentTerm = terms?.find((t: any) => t.isActive)
+                    setActiveTerm(currentTerm || null)
+                }
             }
         } catch (error) {
-            console.error("Failed to load app context:", error)
+            console.warn("[App Context] Partial initialization failed (likely no DB):", error)
+            // Still allow the app to render
+            setAllYears([])
+            setAllTerms([])
         } finally {
             setIsLoading(false)
         }
