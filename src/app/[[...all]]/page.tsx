@@ -85,12 +85,15 @@ export default function UniversalRouter(props: any) {
     
     // Resolve Route
     const view = useMemo(() => {
-        const segments = params.all as string[] | undefined;
-        if (!segments || segments.length === 0) {
+        const segments = (params.all as string[]) || [];
+        const path = segments.join('/');
+        
+        console.log(`[UniversalRouter] Path: /${path} | Segments:`, segments);
+
+        if (segments.length === 0 || path === '' || path === 'index') {
              return { type: 'platform', component: LandingPage, slug: '' };
         }
 
-        const path = segments.join('/');
         const first = segments[0];
 
         // 1. Check Platform Routes
