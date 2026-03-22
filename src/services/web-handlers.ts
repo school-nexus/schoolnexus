@@ -1,5 +1,6 @@
 import { repository, type DrizzleDB } from '@/db/repository';
-import * as schema from '../db/schema';
+import { eq, and } from 'drizzle-orm';
+import * as schema from '@/db/schema';
 
 /**
  * Handle database requests in Web mode by calling the repository directly.
@@ -58,13 +59,80 @@ export const handleWebRequest = async (db: unknown, channel: string, args: unkno
             return await repository.users.getAll(d1, schoolId);
         case 'get-classes':
             return await repository.classes.getAll(d1, schoolId);
+        case 'get-subjects':
+            return await d1.select().from(schema.subjects).where(eq(schema.subjects.schoolId, schoolId));
+        case 'get-academic-years':
+            return await d1.select().from(schema.academicYears).where(eq(schema.academicYears.schoolId, schoolId));
+        case 'get-terms':
+            return await d1.select().from(schema.terms).where(eq(schema.terms.schoolId, schoolId));
+        case 'get-teacher-report-data': {
+            const teachers = await d1.select().from(schema.teachers).where(eq(schema.teachers.schoolId, schoolId));
+            return teachers.map(t => ({
+                ...t,
+                qualifications: (t as any).qualification // Align with UI expectations
+            }));
+        }
+        case 'get-students':
+            return await repository.students.getAll(d1, schoolId);
+        case 'get-dashboard-stats':
+            return await repository.dashboard.getStats(d1, schoolId);
+        case 'get-dashboard-charts-data':
+            return await repository.dashboard.getChartsData(d1, schoolId);
+        case 'get-school-by-slug':
+            return await repository.schools.getBySlug(d1, args[0] as string);
         case 'has-completed-setup':
             return await repository.settings.hasCompletedSetup(d1, schoolId);
+        case 'initialize-database':
+            return { success: true, message: "D1 is already initialized via migrations" };
+        case 'create-school':
+            return await repository.schools.create(d1, args[0]);
+        case 'complete-setup':
         case 'mark-setup-completed':
             if (schoolId === 1) {
                 return await repository.settings.update(d1, 'platform_setup_completed', 'true', 1);
             }
             return await repository.settings.update(d1, 'setup_completed', 'true', schoolId);
+        case 'save-setup-data': {
+            const data = args[0] as any;
+            const { schoolInfo, academicYear } = data;
+            
+            // 1. Create/Update Profile
+            await repository.profile.update(d1, schoolId, {
+                name: schoolInfo.name,
+                phone: schoolInfo.phone,
+                email: schoolInfo.email,
+                address: schoolInfo.address,
+                motto: schoolInfo.motto,
+                currency: schoolInfo.currency || 'UGX',
+                website: schoolInfo.website,
+                registrationNumber: schoolInfo.registrationNumber
+            });
+
+            // 2. Create Academic Year
+            if (academicYear.name) {
+                const [year] = await repository.academicYears.update(d1, schoolId, {
+                    name: academicYear.name,
+                    startDate: academicYear.startDate,
+                    endDate: academicYear.endDate,
+                    isActive: true
+                });
+
+                // 3. Create Terms
+                if (year && academicYear.terms) {
+                    for (const term of academicYear.terms) {
+                        await repository.terms.update(d1, schoolId, {
+                            academicYearId: (year as any).id,
+                            name: term.name,
+                            startDate: term.startDate,
+                            endDate: term.endDate,
+                            isActive: term.isActive
+                        });
+                    }
+                }
+            }
+
+            return { success: true };
+        }
         case 'create-user': {
             const userData = args[0] as any;
             return await repository.users.create(d1, { ...userData, schoolId: userData.role === 'super_admin' ? null : schoolId });

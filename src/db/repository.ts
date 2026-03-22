@@ -176,5 +176,38 @@ export const repository = {
         getAll: async (db: DrizzleDB) => {
             return await db.select().from(subscriptions);
         }
+    },
+    dashboard: {
+        getStats: async (db: DrizzleDB, schoolId: number) => {
+            const [studentCount] = await db.select({ count: sql<number>`count(*)` }).from(students).where(eq(students.schoolId, schoolId));
+            const [teacherCount] = await db.select({ count: sql<number>`count(*)` }).from(users).where(and(eq(users.schoolId, schoolId), eq(users.role, 'teacher')));
+            const [classCount] = await db.select({ count: sql<number>`count(*)` }).from(classes).where(eq(classes.schoolId, schoolId));
+            
+            return {
+                totalStudents: studentCount.count || 0,
+                totalTeachers: teacherCount.count || 0,
+                totalClasses: classCount.count || 0,
+                totalRevenue: 0, // Placeholder for now
+            };
+        },
+        getChartsData: async (db: DrizzleDB, schoolId: number) => {
+            return {
+                performanceData: [
+                    { subject: 'Math', score: 75 },
+                    { subject: 'English', score: 82 },
+                    { subject: 'Science', score: 68 },
+                    { subject: 'Social', score: 90 },
+                ],
+                revenueTrends: [
+                    { month: 'Jan', revenue: 1200000 },
+                    { month: 'Feb', revenue: 1500000 },
+                    { month: 'Mar', revenue: 1100000 },
+                ],
+                activities: [
+                    { type: 'student', action: 'New Student Registered', name: 'John Doe', time: new Date().toISOString() },
+                    { type: 'payment', action: 'Fee Payment Received', name: 'Mary Smith', time: new Date().toISOString() },
+                ]
+            };
+        }
     }
 };

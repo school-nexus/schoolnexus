@@ -51,9 +51,23 @@ export const invokeIPC = async <T>(channel: string, ...args: any[]): Promise<T> 
         const isWeb = !window.electron;
         if (isWeb) {
             try {
+                // Extract school slug from URL if possible
+                let schoolSlug = 'platform';
+                const pathParts = window.location.pathname.split('/').filter(Boolean);
+                if (pathParts.length > 0) {
+                    // If the first part is a known non-school route, use platform
+                    const platformRoutes = ['login', 'setup', 'school-login', 'super-admin'];
+                    if (!platformRoutes.includes(pathParts[0])) {
+                        schoolSlug = pathParts[0];
+                    }
+                }
+
                 const response = await fetch('/api/rpc', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-school-slug': schoolSlug
+                    },
                     body: JSON.stringify({ channel, args })
                 });
 
