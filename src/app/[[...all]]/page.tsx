@@ -6,10 +6,10 @@ import { Suspense, useMemo } from 'react';
 export const runtime = 'edge';
 
 // 1. Platform Views (Root Level)
-const LandingPage = dynamic(() => import('@/app/landing-page-content'), { ssr: false });
-const LoginPage = dynamic(() => import('@/app/login/login-page-content').then(mod => mod.LoginPageContent), { ssr: false });
-const SetupPage = dynamic(() => import('@/app/setup/setup-page-content').then(mod => mod.SetupPageContent), { ssr: false });
-const SchoolLoginPage = dynamic(() => import('@/app/school-login/school-login-content'), { ssr: false });
+const LandingPage = dynamic(() => import('../landing-page-content'), { ssr: false });
+const LoginPage = dynamic(() => import('../login/login-page-content').then(mod => mod.LoginPageContent), { ssr: false });
+const SetupPage = dynamic(() => import('../setup/setup-page-content').then(mod => mod.SetupPageContent), { ssr: false });
+const SchoolLoginPage = dynamic(() => import('../school-login/school-login-content'), { ssr: false });
 
 // 2. Dashboard Views (Scoped)
 const DashboardLayout = dynamic(() => import('@/components/layout/dashboard-layout').then(mod => mod.DashboardLayout), { ssr: false });
@@ -76,8 +76,8 @@ const viewMap: Record<string, any> = {
     'teachers/profiles': dynamic(() => import('@/app/[slug]/(dashboard)/teachers/profiles/view'), { ssr: false }),
     'teachers/profiles/[id]': dynamic(() => import('@/app/[slug]/(dashboard)/teachers/profiles/[id]/view'), { ssr: false }),
     'teachers': dynamic(() => import('@/app/[slug]/(dashboard)/teachers/view'), { ssr: false }),
-    'super-admin': dynamic(() => import('@/app/super-admin/view'), { ssr: false }),
-    'super-admin/subscriptions': dynamic(() => import('@/app/super-admin/subscriptions/view'), { ssr: false }),
+    'super-admin': dynamic(() => import('../super-admin/view'), { ssr: false }),
+    'super-admin/subscriptions': dynamic(() => import('../super-admin/subscriptions/view'), { ssr: false }),
 };
 
 export default function UniversalRouter(props: any) {
