@@ -44,7 +44,8 @@ export function LoginClient({ schoolSlug, isPlatform }: LoginClientProps) {
         setIsLoading(true)
 
         try {
-            await login(username, password)
+            const redirectPath = isPlatform ? "/super-admin" : `/${schoolSlug}/dashboard`;
+            await login(username, password, redirectPath)
         } catch (error) {
             // Error is handled in AuthContext
         } finally {

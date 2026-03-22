@@ -20,6 +20,15 @@ export default function middleware(request: NextRequest) {
 
     const requestHeaders = new Headers(request.headers);
     
+    // Protect /setup routes from non super_admins
+    if (pathname === '/setup' || pathname.endsWith('/setup')) {
+        const role = request.cookies.get('school_nexus_role')?.value;
+        if (role !== 'super_admin') {
+            console.log(`[Middleware] Unauthorized access to setup by role: ${role || 'none'}. Redirecting to /`);
+            return NextResponse.redirect(new URL('/', request.url));
+        }
+    }
+
     // 2. Identify Tenant Slug from Path
     // Native Strategy: Next.js handles /[slug]/ natively via file system.
     // Middleware only needs to identify the slug to set the x-school-slug header.

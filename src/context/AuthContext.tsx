@@ -17,7 +17,7 @@ interface User {
 interface AuthContextType {
     user: User | null
     isLoading: boolean
-    login: (username: string, password: string) => Promise<void>
+    login: (username: string, password: string, redirectTo?: string) => Promise<void>
     logout: () => void
 }
 
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => clearTimeout(timer)
     }, [])
 
-    const login = async (username: string, password: string) => {
+    const login = async (username: string, password: string, redirectTo?: string) => {
         setIsLoading(true)
         try {
             const users = await userActions.getAll()
@@ -57,8 +57,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (foundUser && foundUser.password && await comparePassword(password, foundUser.password as string)) {
                 setUser(foundUser as any)
                 localStorage.setItem("school_nexus_user", JSON.stringify(foundUser))
+                // Set cookies for middleware protection
+                document.cookie = `school_nexus_session=${foundUser.id}; path=/; max-age=86400; SameSite=Lax`
+                document.cookie = `school_nexus_role=${foundUser.role || 'user'}; path=/; max-age=86400; SameSite=Lax`
+                
                 toast.success(`Welcome back, ${foundUser.fullName}`)
-                router.push("/dashboard")
+                
+                // Redirect logic
+                if (redirectTo) {
+                    router.push(redirectTo)
+                } else {
+                    router.push("/dashboard")
+                }
             } else {
                 throw new Error("Invalid credentials")
             }
@@ -77,6 +87,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const logout = () => {
         setUser(null)
         localStorage.removeItem("school_nexus_user")
+        // Clear cookies
+        document.cookie = "school_nexus_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+        document.cookie = "school_nexus_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
         router.push("/login")
         toast.success("Logged out successfully")
     }

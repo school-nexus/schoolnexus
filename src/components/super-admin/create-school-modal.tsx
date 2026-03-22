@@ -19,7 +19,7 @@ import { toast } from "sonner"
 interface CreateSchoolModalProps {
     isOpen: boolean
     onClose: () => void
-    onSuccess: () => void
+    onSuccess: (slug: string) => void
 }
 
 export function CreateSchoolModal({ isOpen, onClose, onSuccess }: CreateSchoolModalProps) {
@@ -62,7 +62,7 @@ export function CreateSchoolModal({ isOpen, onClose, onSuccess }: CreateSchoolMo
 
             if (result) {
                 toast.success("School created successfully!");
-                onSuccess();
+                onSuccess(slug);
                 setName("");
                 onClose();
             }

@@ -28,12 +28,15 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
+import { useRouter } from "next/navigation"
+
 import { CreateSchoolModal } from "@/components/super-admin/create-school-modal"
 
 export default function SuperAdminDashboard() {
     const [schools, setSchools] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const router = useRouter()
 
     const fetchSchools = async () => {
         setIsLoading(true);
@@ -55,8 +58,13 @@ export default function SuperAdminDashboard() {
         setIsModalOpen(true);
     };
 
-    const handleCreateSuccess = () => {
-        fetchSchools();
+    const handleCreateSuccess = (slug?: string) => {
+        setIsModalOpen(false);
+        if (slug) {
+            router.push(`/${slug}/setup`);
+        } else {
+            fetchSchools();
+        }
     };
 
     return (
