@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
         const context = getRequestContext();
-        const env = context?.env || {};
+        const env = (context?.env || {}) as any;
         const envKeys = Object.keys(env);
         
         const debugInfo = {
@@ -16,11 +16,12 @@ export async function GET() {
             availableEnvKeys: envKeys,
             dbBindingFound: envKeys.includes('DB'),
             bucketBindingFound: envKeys.includes('BUCKET'),
-            schoolNexusConfigFound: envKeys.includes('NEXT_PUBLIC_PLATFORM_DOMAIN') || envKeys.includes('PLATFORM_DOMAIN'),
+            platformDomain: env.NEXT_PUBLIC_PLATFORM_DOMAIN || env.PLATFORM_DOMAIN || 'Not found',
             nodeEnv: process.env.NODE_ENV,
             headers: {
-                host: context?.request?.headers?.get('host'),
-                userAgent: context?.request?.headers?.get('user-agent')
+                host: request.headers.get('host'),
+                userAgent: request.headers.get('user-agent'),
+                xSchoolSlug: request.headers.get('x-school-slug')
             }
         };
 
