@@ -10,8 +10,6 @@ import { ArrowUpCircle, Ban, CheckCircle, ChevronRight, Download, FileText, Grad
 import Link from "next/link"
 import { studentActions, streamActions, classActions, schoolProfileActions } from "@/lib/electron"
 import { toast } from "sonner"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -165,6 +163,9 @@ export default function StudentListPage() {
 
     const handleExportPDF = async () => {
         try {
+            const { default: jsPDF } = await import("jspdf")
+            const { default: autoTable } = await import("jspdf-autotable")
+            
             const profile = await schoolProfileActions.get()
             const doc = new jsPDF()
             const pageWidth = doc.internal.pageSize.getWidth()
@@ -217,7 +218,7 @@ export default function StudentListPage() {
 
             // Footer
             // @ts-expect-error - jspdf-autotable adds lastAutoTable to jsPDF instance
-            const lastTable = doc.lastAutoTable
+            const lastTable = (doc as any).lastAutoTable
             const finalY = lastTable ? lastTable.finalY : 150
             doc.setFontSize(9)
             doc.setTextColor(148, 163, 184) // Slate-400

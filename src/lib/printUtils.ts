@@ -1,5 +1,4 @@
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+// No top-level imports for heavy libraries
 
 export interface PrintOptions {
   elementId: string
@@ -147,6 +146,9 @@ export class PrintService {
     const dimensions = this.getPaperDimensions(paperSize, orientation)
 
     try {
+      const { default: html2canvas } = await import('html2canvas')
+      const { default: jsPDF } = await import('jspdf')
+      
       const canvas = await html2canvas(element, {
         scale: scale,
         useCORS: true,

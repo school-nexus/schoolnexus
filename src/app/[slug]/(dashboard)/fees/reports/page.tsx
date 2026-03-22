@@ -28,10 +28,9 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { feeActions, studentActions, classActions, termActions, schoolProfileActions, dashboardActions, invoiceActions } from "@/lib/electron"
 import { toast } from "sonner"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
 import { cn } from "@/lib/utils"
 import { createStandardPDF, addStandardFooter, addInfoBox, standardTableStyles } from "@/lib/pdfUtils"
+import type { jsPDF } from "jspdf"
 
 interface ReportType {
     id: string
@@ -352,7 +351,9 @@ export default function FeeReportsPage() {
     const generatePDFReport = async () => {
         if (!selectedReport || !schoolProfile) return
 
-        const { doc, pageWidth, margin } = createStandardPDF({
+        const { default: autoTable } = await import("jspdf-autotable")
+
+        const { doc, pageWidth, margin } = await createStandardPDF({
             title: selectedReport.title,
             subtitle: `Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
             schoolProfile,
@@ -361,22 +362,22 @@ export default function FeeReportsPage() {
 
         switch (selectedReport.id) {
             case "collection":
-                await generateCollectionPDF(doc, margin, pageWidth)
+                await generateCollectionPDF(doc, margin, pageWidth, autoTable)
                 break
             case "balances":
-                await generateBalancesPDF(doc, margin, pageWidth)
+                await generateBalancesPDF(doc, margin, pageWidth, autoTable)
                 break
             case "daily":
-                await generateDailyPDF(doc, margin, pageWidth)
+                await generateDailyPDF(doc, margin, pageWidth, autoTable)
                 break
             case "class":
-                await generateClassPDF(doc, margin, pageWidth)
+                await generateClassPDF(doc, margin, pageWidth, autoTable)
                 break
             case "student":
-                await generateStudentPDF(doc, margin, pageWidth)
+                await generateStudentPDF(doc, margin, pageWidth, autoTable)
                 break
             case "invoices":
-                await generateInvoicePDF(doc, margin, pageWidth)
+                await generateInvoicePDF(doc, margin, pageWidth, autoTable)
                 break
         }
 
@@ -386,7 +387,7 @@ export default function FeeReportsPage() {
     }
 
 
-    const generateCollectionPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
+    const generateCollectionPDF = async (doc: jsPDF, margin: number, pageWidth: number, autoTable: any) => {
         const payments = await feeActions.getAllPayments() as RawPayment[]
 
         let y = 45
@@ -415,7 +416,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateBalancesPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
+    const generateBalancesPDF = async (doc: jsPDF, margin: number, pageWidth: number, autoTable: any) => {
         const debtors = await dashboardActions.getTopDebtors() as RawDebtor[]
 
         let y = 45
@@ -442,7 +443,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateDailyPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
+    const generateDailyPDF = async (doc: jsPDF, margin: number, pageWidth: number, autoTable: any) => {
         const payments = await feeActions.getAllPayments() as RawPayment[]
         const filtered = payments.filter((p: RawPayment) => p.date === selectedDate)
         const total = filtered.reduce((sum: number, p: RawPayment) => sum + p.amount, 0)
@@ -470,7 +471,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateClassPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
+    const generateClassPDF = async (doc: jsPDF, margin: number, pageWidth: number, autoTable: any) => {
         if (selectedClass === "all") throw new Error("Select a class")
 
         const payments = await feeActions.getAllPayments() as RawPayment[]
@@ -500,7 +501,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateStudentPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
+    const generateStudentPDF = async (doc: jsPDF, margin: number, pageWidth: number, autoTable: any) => {
         if (!selectedStudent) throw new Error("Select a student")
 
         const student = students.find(s => s.id === parseInt(selectedStudent))
@@ -536,7 +537,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateInvoicePDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
+    const generateInvoicePDF = async (doc: jsPDF, margin: number, pageWidth: number, autoTable: any) => {
         const invoices = await invoiceActions.getAll() as RawInvoiceData[]
 
         let y = 45
@@ -798,18 +799,11 @@ export default function FeeReportsPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         {selectedReport?.id === "collection" && <SelectItem value="all">All Classes</SelectItem>}
-                                        {classes.map(c => (
+                                        {classes.map((c) => (
                                             <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                            </div>
-                        )}
-
-                        {selectedReport?.id === "daily" && (
-                            <div className="space-y-2">
-                                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date <span className="text-red-500">*</span></Label>
-                                <Input type="date" className="rounded-xl h-11 border-slate-200 bg-slate-50/50" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
                             </div>
                         )}
 
@@ -821,26 +815,60 @@ export default function FeeReportsPage() {
                                         <SelectValue placeholder="Select student" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {students.map(s => (
-                                            <SelectItem key={s.id} value={s.id.toString()}>
-                                                {s.firstName} {s.lastName} ({s.admissionNumber})
-                                            </SelectItem>
+                                        {students.map((s) => (
+                                            <SelectItem key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName} ({s.admissionNumber})</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                         )}
 
-                        <div className="flex items-center gap-2 pt-2">
-                            <Checkbox id="details" checked={includeDetails} onCheckedChange={(v) => setIncludeDetails(v as boolean)} />
-                            <label htmlFor="details" className="text-sm text-slate-600 cursor-pointer">Include detailed breakdown</label>
+                        {selectedReport?.id === "daily" && (
+                            <div className="space-y-2">
+                                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date <span className="text-red-500">*</span></Label>
+                                <Input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    className="rounded-xl h-11 border-slate-200 bg-slate-50/50"
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex items-center space-x-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <Checkbox
+                                id="details"
+                                checked={includeDetails}
+                                onCheckedChange={(checked) => setIncludeDetails(checked === true)}
+                            />
+                            <div className="grid gap-1.5 leading-none">
+                                <label
+                                    htmlFor="details"
+                                    className="text-xs font-bold text-slate-900 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                    Include full breakdown
+                                </label>
+                                <p className="text-[10px] text-slate-500">
+                                    Show itemized entries in the report.
+                                </p>
+                            </div>
                         </div>
                     </div>
-                    <DialogFooter className="p-6 bg-slate-50/50 border-t border-slate-100 gap-3">
-                        <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="h-11 rounded-xl text-slate-500 hover:text-slate-700">Cancel</Button>
-                        <Button onClick={generateReport} disabled={generating} className="h-11 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02]">
-                            {generating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-                            Generate Report
+                    <DialogFooter className="bg-slate-50 p-4 border-t border-slate-100">
+                        <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="rounded-xl">Cancel</Button>
+                        <Button
+                            onClick={generateReport}
+                            disabled={generating}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 h-11 font-bold shadow-lg shadow-emerald-500/20"
+                        >
+                            {generating ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Generating...
+                                </>
+                            ) : (
+                                "Generate Report"
+                            )}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -2,9 +2,6 @@
 export const runtime = 'edge';
 
 import React, { useState, useEffect, useRef } from "react"
-import * as XLSX from "xlsx"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
 import { type GradingScale, calculateGrade, getGradePoints, calculateAggregates, determineDivision } from "@/lib/reportCardUtils"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
@@ -283,13 +280,14 @@ export default function MarksheetsPage() {
         }, 1500)
     }
 
-    const handleExport = () => {
+    const handleExport = async () => {
         if (students.length === 0) {
             toast.error("No data to export")
             return
         }
 
         try {
+            const XLSX = await import("xlsx")
             // Prepare data for export
             const exportData = filteredStudents.map((student, idx) => {
                 const stats = calculateStats(student.id)
@@ -329,12 +327,6 @@ export default function MarksheetsPage() {
                 [""] // Empty row
             ], { origin: "A1" })
 
-            // Adjust data start row (since we added 6 header rows)
-            // Note: json_to_sheet creates data starting at A1. We need to move it down or append it differently.
-            // Easier approach: Create sheet from data, then insert rows at top? 
-            // Or just append sheet as is for now to keep it simple and robust.
-            // Let's stick to simple data export for now to ensure compatibility.
-
             XLSX.utils.book_append_sheet(wb, ws, "Marksheets")
 
             // Generate filename
@@ -355,6 +347,11 @@ export default function MarksheetsPage() {
         }
 
         try {
+            const [jsPDF, autoTable] = await Promise.all([
+                import("jspdf").then(m => m.default),
+                import("jspdf-autotable").then(m => m.default)
+            ])
+
             const profile = await schoolProfileActions.get() as { name: string, address: string, phone: string, email: string }
             const doc = new jsPDF('l', 'mm', 'a4') // Landscape for better marksheet fit
             const pageWidth = doc.internal.pageSize.getWidth()

@@ -1,4 +1,4 @@
-import jsPDF from "jspdf"
+import type { jsPDF } from "jspdf"
 
 export interface SchoolProfile {
     name: string
@@ -15,7 +15,9 @@ export interface PDFOptions {
     margin?: number;
 }
 
-export const createStandardPDF = (options: PDFOptions) => {
+export const createStandardPDF = async (options: PDFOptions) => {
+    const { default: jsPDF } = await import("jspdf")
+    
     const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",

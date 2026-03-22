@@ -2,9 +2,6 @@
 export const runtime = 'edge';
 
 import { useState, useEffect } from "react"
-import * as XLSX from "xlsx"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
 import { PageHeader } from "@/components/ui/page-header"
 import { DataTable } from "@/components/ui/data-table"
 import { columns, Teacher } from "./components/columns"
@@ -100,13 +97,14 @@ export default function TeacherListPage() {
         }
     }
 
-    const handleExportExcel = () => {
+    const handleExportExcel = async () => {
         if (teachers.length === 0) {
             toast.error("No data to export")
             return
         }
 
         try {
+            const XLSX = await import("xlsx")
             const exportData = teachers.map((t, idx) => ({
                 "No": idx + 1,
                 "Teacher ID": t.teacherId,
@@ -141,6 +139,9 @@ export default function TeacherListPage() {
         }
 
         try {
+            const { default: jsPDF } = await import("jspdf")
+            const { default: autoTable } = await import("jspdf-autotable")
+            
             const profile = await schoolProfileActions.get()
             const doc = new jsPDF('p', 'mm', 'a4')
             const pageWidth = doc.internal.pageSize.getWidth()
@@ -198,7 +199,7 @@ export default function TeacherListPage() {
 
             // Add Footer
             // @ts-expect-error - lastAutoTable is added by jspdf-autotable
-            const lastTable = doc.lastAutoTable as { finalY: number } | undefined;
+            const lastTable = (doc as any).lastAutoTable as { finalY: number } | undefined;
             const finalY = lastTable ? lastTable.finalY : 150
             doc.setFontSize(9)
             doc.setTextColor(148, 163, 184) // Slate-400
@@ -346,4 +347,3 @@ export default function TeacherListPage() {
         </div>
     )
 }
-

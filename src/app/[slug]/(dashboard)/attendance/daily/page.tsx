@@ -11,8 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { AlertCircle, CalendarIcon, CheckCircle2, ChevronLeft, ChevronRight, Clock, Download, FileSpreadsheet, FileText, Filter, Loader2, Save, Search, Users, XCircle } from 'lucide-react';
 import { exportToCSV, cn } from "@/lib/utils"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
 import { attendanceActions, streamActions, classActions, termActions, schoolProfileActions } from "@/lib/electron"
 import { toast } from "sonner"
 import { useConfirm } from "@/components/providers/confirm-provider"
@@ -192,6 +190,11 @@ export default function DailyAttendancePage() {
         }
 
         try {
+            const [jsPDF, autoTable] = await Promise.all([
+                import("jspdf").then(m => m.default),
+                import("jspdf-autotable").then(m => m.default)
+            ]);
+
             const profile = await schoolProfileActions.get()
             const doc = new jsPDF('p', 'mm', 'a4')
             const pageWidth = doc.internal.pageSize.getWidth()
@@ -511,4 +514,3 @@ export default function DailyAttendancePage() {
         </div>
     )
 }
-
