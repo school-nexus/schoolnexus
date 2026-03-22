@@ -11,20 +11,27 @@ export async function POST(request: NextRequest) {
         const body = (await request.json()) as { channel: string; args: any[] };
         const { channel, args } = body;
         
-        const context = getRequestContext();
-        const env = (context?.env || {}) as unknown as CloudflareEnv;
+        let env: any = (process.env as any) || {};
+        
+        try {
+            const context = getRequestContext();
+            if (context && context.env) {
+                env = context.env;
+            }
+        } catch (e) {
+            console.warn('[RPC API] Could not retrieve Cloudflare context, falling back to process.env');
+        }
         
         if (!env || !env.DB) {
             const availableKeys = Object.keys(env);
             console.error('[RPC API] Database binding (DB) missing!', { 
-                hasContext: !!context,
                 availableKeys,
                 message: 'Check Cloudflare Pages -> Settings -> Functions -> D1 database bindings'
             });
             
             return NextResponse.json({ 
                 error: 'Database binding not found',
-                details: 'The D1 database binding "DB" is missing in the Cloudflare environment.',
+                details: 'The D1 database binding "DB" is missing in the environment. If you are developing locally, ensure you are using a platform that supports Cloudflare bindings (like wrangler) or that the environment is correctly configured.',
                 action: 'Link a D1 database with variable name "DB" in the Cloudflare Pages dashboard.',
                 debug: { availableKeys }
             }, { status: 500 });
