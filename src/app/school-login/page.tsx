@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import { Building2, ArrowRight } from "lucide-react"
-
+import { ArrowRight, Building2 } from 'lucide-react';
 export default function SchoolLoginPage() {
     const router = useRouter()
     const [slug, setSlug] = useState("")

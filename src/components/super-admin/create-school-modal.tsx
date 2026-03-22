@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { School, Link as LinkIcon, Loader2, AlertCircle } from "lucide-react"
+import { AlertCircle, LinkIcon, Loader2, School } from 'lucide-react';
 import { invokeIPC } from "@/lib/electron"
 import { toast } from "sonner"
 

@@ -2,18 +2,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import {
-    User,
-    Mail,
-    Lock,
-    ShieldCheck,
-    WifiOff,
-    HelpCircle,
-    ArrowLeft,
-    ArrowRight,
-    AlertCircle
-} from "lucide-react"
-
+import { AlertCircle, ArrowLeft, ArrowRight, HelpCircle, Lock, Mail, ShieldCheck, User, WifiOff } from 'lucide-react';
 interface AdminAccountStepProps {
     data: any
     onUpdate: (data: any) => void

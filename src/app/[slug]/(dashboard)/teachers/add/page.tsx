@@ -6,12 +6,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Image from 'next/image';
-import {
-    User, Mail, Phone, MapPin, Calendar, BookOpen,
-    Shield, CheckCircle2, Loader2, Upload, X, Camera,
-    Save, School, AlertCircle, Briefcase, GraduationCap,
-    ArrowLeft, Sparkles, UserPlus
-} from 'lucide-react';
+import { AlertCircle, ArrowLeft, BookOpen, Briefcase, Calendar, Camera, CheckCircle2, GraduationCap, Loader2, Mail, MapPin, Phone, Save, School, Shield, Sparkles, Upload, User, UserPlus, X } from 'lucide-react';
+;
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

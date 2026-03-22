@@ -1,6 +1,6 @@
 "use client"
 
-import { School, Phone, Mail, MapPin, Hash, Calendar, GraduationCap, Scale, User, FileText, CheckCircle2, AlertCircle } from "lucide-react"
+import { AlertCircle, Calendar, CheckCircle2, FileText, GraduationCap, Hash, Mail, MapPin, Phone, Scale, School, User } from 'lucide-react';
 import { useState, useEffect } from "react"
 import { schoolProfileActions, fileActions } from "@/lib/electron"
 import { cn } from "@/lib/utils"

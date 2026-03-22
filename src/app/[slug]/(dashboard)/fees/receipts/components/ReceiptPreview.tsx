@@ -1,6 +1,6 @@
 "use client"
 
-import { School, Phone, Mail, MapPin, CheckCircle2, User, Calendar, CreditCard, Clock } from "lucide-react"
+import { Calendar, CheckCircle2, Clock, CreditCard, Mail, MapPin, Phone, School, User } from 'lucide-react';
 import { schoolProfileActions, fileActions } from "@/lib/electron"
 import { useState, useEffect } from "react"
 import { getPaymentMethodInfo } from "@/lib/constants"

@@ -40,20 +40,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import {
-    Plus,
-    Search,
-    MoreHorizontal,
-    FileText,
-    Download,
-    Filter,
-    Calendar,
-    Award,
-    ClipboardList,
-    Loader2,
-    Trash2,
-    Edit
-} from "lucide-react"
+import { Award, Calendar, ClipboardList, Download, Edit, FileText, Filter, Loader2, MoreHorizontal, Plus, Search, Trash2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { examActions, termActions, academicYearActions, subjectActions, classActions } from "@/lib/electron"

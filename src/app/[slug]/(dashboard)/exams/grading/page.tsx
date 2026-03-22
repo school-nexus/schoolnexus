@@ -15,15 +15,7 @@ import {
     DialogFooter
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import {
-    Settings2,
-    Save,
-    Trash2,
-    PlusCircle,
-    GraduationCap,
-    Loader2,
-    Info
-} from "lucide-react"
+import { GraduationCap, Info, Loader2, PlusCircle, Save, Settings2, Trash2 } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {

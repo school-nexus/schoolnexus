@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import path from 'path';
 import * as schema from './schema.js';
+import { initializeDatabase } from './index-electron.js';
 
 // Simple database initialization without Electron dependencies
 const dbPath = path.resolve('school-nexus.db');

@@ -5,10 +5,7 @@ import React, { useState, useEffect } from "react"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-    Search, Loader2, Printer, SearchX, Users,
-    Filter, GraduationCap, CheckCircle2, LayoutGrid, List
-} from "lucide-react"
+import { CheckCircle2, Filter, GraduationCap, LayoutGrid, List, Loader2, Printer, Search, SearchX, Users } from 'lucide-react';
 import { studentActions, schoolProfileActions, classActions, streamActions } from "@/lib/electron"
 import { toast } from "sonner"
 import { RegistrationCardTemplate } from "@/components/reports/registration-card-template"

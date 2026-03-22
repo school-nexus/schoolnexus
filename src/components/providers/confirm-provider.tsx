@@ -11,8 +11,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { AlertTriangle } from "lucide-react"
-
+import { AlertTriangle } from 'lucide-react';
 interface ConfirmOptions {
     title?: string
     description?: string

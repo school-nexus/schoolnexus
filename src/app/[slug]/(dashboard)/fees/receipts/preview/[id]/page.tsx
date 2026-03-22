@@ -8,7 +8,7 @@ import { feeActions, schoolProfileActions } from "@/lib/electron"
 import { ReceiptPreview } from "../../components/ReceiptPreview"
 import { RawReceipt, RawProfile } from "../../page"
 import { Button } from "@/components/ui/button"
-import { Printer, Download, ArrowLeft, Mail, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Download, Mail, Printer, ShieldCheck, Sparkles } from 'lucide-react';
 import { printReceipt, exportReceiptToPDF, setupPrintPreview } from "@/lib/printUtils"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"

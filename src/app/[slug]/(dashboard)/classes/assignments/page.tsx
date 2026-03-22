@@ -6,20 +6,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import {
-    Search,
-    Users,
-    UserPlus,
-    BookOpen,
-    MoreHorizontal,
-    Mail,
-    Phone,
-    GraduationCap,
-    Filter,
-    ArrowRight,
-    CheckCircle2,
-    Loader2
-} from "lucide-react"
+import { ArrowRight, BookOpen, CheckCircle2, Filter, GraduationCap, Loader2, Mail, MoreHorizontal, Phone, Search, UserPlus, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import {

@@ -6,23 +6,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/dashboard/stat-card"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import {
-    Download,
-    TrendingUp,
-    TrendingDown,
-    PieChart,
-    BarChart3,
-    Users,
-    Receipt,
-    ArrowUpRight,
-    ArrowDownRight,
-    Loader2,
-    Wallet,
-    CreditCard,
-    Calendar,
-    ChevronRight,
-    Plus,
-} from "lucide-react"
+import { ArrowDownRight, ArrowUpRight, BarChart3, Calendar, ChevronRight, CreditCard, Download, Loader2, PieChart, Plus, Receipt, TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react';
 import { Badge } from "@/components/ui/badge"
 import { expenseActions, incomeActions, feeActions, studentActions, teacherActions, payrollActions, schoolProfileActions } from "@/lib/electron"
 import { toast } from "sonner"

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { School, User, Calendar, MapPin, Phone, Mail, QrCode } from "lucide-react"
+import { Calendar, Mail, MapPin, Phone, QrCode, School, User } from 'lucide-react';
 import { cn } from "@/lib/utils"
 import { schoolProfileActions, fileActions } from "@/lib/electron"
 import { calculateGrade, calculateRemarks, type GradingScale } from "@/lib/reportCardUtils"

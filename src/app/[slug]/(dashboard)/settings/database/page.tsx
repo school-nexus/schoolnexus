@@ -5,7 +5,7 @@ import { useState } from "react"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Database, RefreshCw, AlertTriangle, CheckCircle2, Loader2, Server } from "lucide-react"
+import { AlertTriangle, CheckCircle2, Database, Loader2, RefreshCw, Server } from 'lucide-react';
 import { userActions } from "@/lib/electron"
 import { toast } from "sonner"
 import { useApp } from "@/context/AppContext"

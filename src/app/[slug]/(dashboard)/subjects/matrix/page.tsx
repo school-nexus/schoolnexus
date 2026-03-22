@@ -21,17 +21,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import {
-    Search,
-    Filter,
-    Download,
-    CheckCircle2,
-    XCircle,
-    BookOpen,
-    Layers,
-    Plus,
-    Loader2
-} from "lucide-react"
+import { BookOpen, CheckCircle2, Download, Filter, Layers, Loader2, Plus, Search, XCircle } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import {
     Table,

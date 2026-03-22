@@ -2,21 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import {
-    CheckCircle,
-    Rocket,
-    ArrowLeft,
-    School,
-    Calendar,
-    User,
-    Database,
-    Mail,
-    Phone,
-    Globe,
-    Layers,
-    MapPin
-} from "lucide-react"
-
+import { ArrowLeft, Calendar, CheckCircle, Database, Globe, Layers, Loader2, Mail, MapPin, Phone, Rocket, School, User } from 'lucide-react';
 interface ConfirmationStepProps {
     data: any
     onBack: () => void
@@ -24,8 +10,6 @@ interface ConfirmationStepProps {
     isSubmitting?: boolean
     isPlatform?: boolean
 }
-
-import { Loader2 } from "lucide-react"
 
 export function ConfirmationStep({ data, onBack, onComplete, isSubmitting, isPlatform = false }: ConfirmationStepProps) {
     return (

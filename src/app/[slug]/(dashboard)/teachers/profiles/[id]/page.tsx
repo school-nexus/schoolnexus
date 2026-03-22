@@ -8,17 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import {
-    MapPin,
-    Phone,
-    Mail,
-    Calendar,
-    Briefcase,
-    Pencil,
-    Clock,
-    Loader2,
-    AlertCircle
-} from "lucide-react"
+import { AlertCircle, Briefcase, Calendar, Clock, Loader2, Mail, MapPin, Pencil, Phone } from 'lucide-react';
 import { use, useEffect, useState } from "react"
 import { teacherActions } from "@/lib/electron"
 import { toast } from "sonner"

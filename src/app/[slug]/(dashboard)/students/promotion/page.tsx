@@ -5,9 +5,7 @@ import { useState, useEffect } from "react"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-    ChevronRight, ChevronDown, Users, GraduationCap, CheckCircle2, ArrowRight, AlertTriangle, Loader2
-} from "lucide-react"
+import { AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, ChevronRight, GraduationCap, Loader2, Users } from 'lucide-react';
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import {

@@ -19,7 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { AlertCircle, Loader2 } from "lucide-react"
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from "sonner"
 import { userActions } from "@/lib/electron"
 import { Alert, AlertDescription } from "@/components/ui/alert"

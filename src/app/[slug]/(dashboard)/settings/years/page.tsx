@@ -5,19 +5,7 @@ import { useState, useEffect } from "react"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import {
-    Calendar,
-    Plus,
-    History,
-    Clock,
-    MoreHorizontal,
-    ArrowRight,
-    AlertCircle,
-    CalendarDays,
-    Settings2,
-    Loader2,
-    X
-} from "lucide-react"
+import { AlertCircle, ArrowRight, Calendar, CalendarDays, Clock, History, Loader2, MoreHorizontal, Plus, Settings2, X } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {

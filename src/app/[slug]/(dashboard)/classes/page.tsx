@@ -31,22 +31,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import {
-    Plus,
-    Search,
-    MoreHorizontal,
-    Users,
-    GraduationCap,
-    School,
-    Download,
-    Filter,
-    ChevronRight,
-    ChevronDown,
-    BookOpen,
-    Loader2,
-    Trash2,
-    Edit
-} from "lucide-react"
+import { BookOpen, ChevronDown, ChevronRight, Download, Edit, Filter, GraduationCap, Loader2, MoreHorizontal, Plus, School, Search, Trash2, Users } from 'lucide-react';
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"

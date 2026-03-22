@@ -1,15 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import {
-    Plus, Search, Filter, FileText, Download, Printer,
-    MoreVertical, Eye, Trash2, Calendar, User, CreditCard,
-    ChevronRight, ArrowUpDown, Layers, RefreshCw, X, Receipt,
-    Briefcase, GraduationCap, CheckCircle2, AlertCircle, Clock,
-    LayoutGrid, List, FilePlus2, Users, School, FilterX,
-    BadgeInfo, Send, Mail, Phone, MapPin, Hash, Sparkles,
-    Loader2
-} from "lucide-react"
+import { AlertCircle, ArrowUpDown, BadgeInfo, Briefcase, Calendar, CheckCircle2, ChevronRight, Clock, CreditCard, Download, Eye, FilePlus2, FileText, Filter, FilterX, GraduationCap, Hash, Layers, LayoutGrid, List, Loader2, Mail, MapPin, MoreVertical, Phone, Plus, Printer, Receipt, RefreshCw, School, Search, Send, Sparkles, Trash2, User, Users, X } from 'lucide-react';
 import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/dashboard/stat-card"
 import { Label } from "@/components/ui/label"

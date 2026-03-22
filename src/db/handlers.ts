@@ -1,4 +1,4 @@
-import { db } from './index.js';
+import { db } from './index-electron.js';
 import fs from 'fs';
 import path from 'path';
 import { app } from 'electron';
@@ -4698,7 +4698,7 @@ export const setupHandlers = (ipcMain: any) => {
     try {
       console.log('Starting fresh database initialization...');
 
-      const { closeDatabase, initializeDatabase, getDbPath } = await import('./index.js');
+      const { closeDatabase, initializeDatabase, getDbPath } = await import('./index-electron.js');
 
       // Close current connection
       try {

@@ -3,23 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import {
-    School,
-    Phone,
-    Mail,
-    MapPin,
-    Camera,
-    Lock,
-    ArrowRight,
-    Globe,
-    FileText,
-    Quote,
-    Facebook,
-    Twitter,
-    Linkedin,
-    Coins,
-    X
-} from "lucide-react"
+import { ArrowRight, Camera, Coins, Facebook, FileText, Globe, Linkedin, Lock, Mail, MapPin, Phone, Quote, School, Twitter, X } from 'lucide-react';
 import { fileActions } from "@/lib/electron"
 
 interface SchoolInfoStepProps {

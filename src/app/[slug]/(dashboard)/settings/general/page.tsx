@@ -5,23 +5,7 @@ import { useState, useEffect } from "react"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import {
-    Settings,
-    Globe,
-    Clock,
-    DollarSign,
-    ShieldCheck,
-    Bell,
-    Mail,
-    Save,
-    ChevronRight,
-    Languages,
-    Calendar,
-    Lock,
-    Eye,
-    EyeOff,
-    Loader2
-} from "lucide-react"
+import { Bell, Calendar, ChevronRight, Clock, DollarSign, Eye, EyeOff, Globe, Languages, Loader2, Lock, Mail, Save, Settings, ShieldCheck } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {

@@ -5,37 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import {
-    LayoutDashboard,
-    Users,
-    GraduationCap,
-    BookOpen,
-    Calendar,
-    DollarSign,
-    BarChart3,
-    Settings,
-    FileText,
-    ChevronRight,
-    UserPlus,
-    List,
-    UserCircle,
-    TrendingUp,
-    Upload,
-    Archive,
-    ClipboardList,
-    Wallet,
-    Receipt,
-    CreditCard,
-    FileSpreadsheet,
-    School,
-    Shield,
-    CalendarDays,
-    Bell,
-    Database,
-    HardDrive,
-    PanelLeftClose,
-    PanelLeftOpen,
-} from 'lucide-react';
+import { Archive, BarChart3, Bell, BookOpen, Calendar, CalendarDays, ChevronRight, ClipboardList, CreditCard, Database, DollarSign, FileSpreadsheet, FileText, GraduationCap, HardDrive, LayoutDashboard, List, PanelLeftClose, PanelLeftOpen, Receipt, School, Settings, Shield, TrendingUp, Upload, UserCircle, UserPlus, Users, Wallet } from 'lucide-react';
+;
 import { schoolProfileActions, userActions, fileActions } from '@/lib/electron';
 
 const navigation = [

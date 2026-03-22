@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Loader2, Lock, User, GraduationCap } from "lucide-react"
+import { GraduationCap, Loader2, Lock, User } from 'lucide-react';
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { schoolProfileActions, fileActions } from "@/lib/electron"

@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Search, Mail, Phone, MapPin, MoreHorizontal, Award, FileText, Calendar, Download, Upload, BookOpen, Users, Briefcase, CheckCircle2, AlertCircle, Loader2, Trash2 } from "lucide-react"
+import { AlertCircle, Award, BookOpen, Briefcase, Calendar, CheckCircle2, Download, FileText, Loader2, Mail, MapPin, MoreHorizontal, Pencil, Phone, Search, Trash2, Upload, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -28,8 +28,6 @@ import { teacherActions, subjectActions, academicYearActions, allocationActions,
 import { toast } from "sonner"
 import Link from "next/link"
 import { useConfirm } from "@/components/providers/confirm-provider"
-import { Pencil } from "lucide-react"
-
 interface RawTeacher {
     id: number;
     firstName: string;

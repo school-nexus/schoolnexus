@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PrimaryReportTemplate } from "@/components/reports/primary-report-template"
-import { ArrowLeft, Download, Eye } from "lucide-react"
+import { ArrowLeft, Download, Eye } from 'lucide-react';
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { reportActions, schoolProfileActions } from "@/lib/electron"

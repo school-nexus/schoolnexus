@@ -2,18 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import {
-    School,
-    Calendar,
-    User,
-    Database,
-    CheckCircle,
-    ArrowRight,
-    ArrowLeft,
-    Lightbulb,
-    ChevronRight,
-    Loader2
-} from "lucide-react"
+import { ArrowLeft, ArrowRight, Calendar, CheckCircle, ChevronRight, Database, Lightbulb, Loader2, School, User } from 'lucide-react';
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"

@@ -8,7 +8,7 @@ import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Search, Filter, Mail, Phone, MapPin, GraduationCap, MoreHorizontal, Clock, Award, Shield, FileText, CreditCard, Download, Upload, ChevronDown, TrendingUp, AlertCircle, CheckCircle2, Loader2, ChevronRight, Users, Wallet, User, UploadCloud, Sparkles } from "lucide-react"
+import { AlertCircle, Award, CheckCircle2, ChevronDown, ChevronRight, Clock, CreditCard, Download, FileText, Filter, GraduationCap, Loader2, Mail, MapPin, MoreHorizontal, Pencil, Phone, Search, Shield, Sparkles, TrendingUp, Upload, UploadCloud, User, Users, Wallet } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -37,8 +37,6 @@ import {
 import { reportUtils } from "@/lib/report-utils"
 import { studentActions, guardianActions, feeActions, classActions, streamActions, fileActions, marksActions, attendanceActions } from "@/lib/electron"
 import { toast } from "sonner"
-import { Pencil } from "lucide-react"
-
 interface Student {
     id: number
     admissionNumber: string

@@ -1,16 +1,7 @@
 "use client"
 
-import { 
-    Users, 
-    GraduationCap, 
-    BookOpen, 
-    DollarSign, 
-    Calendar, 
-    ClipboardList,
-    FileText,
-    TrendingUp,
-    CreditCard
-} from 'lucide-react';
+import { BookOpen, Calendar, ClipboardList, CreditCard, DollarSign, FileText, GraduationCap, TrendingUp, Users } from 'lucide-react';
+;
 
 export type UserRole = 'admin' | 'bursar' | 'secretary' | 'teacher';
 

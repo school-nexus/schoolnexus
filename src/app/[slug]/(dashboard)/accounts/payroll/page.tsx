@@ -6,32 +6,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/dashboard/stat-card"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import {
-    Plus,
-    Search,
-    Filter,
-    Download,
-    Users,
-    CreditCard,
-    Banknote,
-    FileText,
-    MoreHorizontal,
-    ChevronRight,
-    ArrowUpRight,
-    Calendar,
-    CheckCircle2,
-    Briefcase,
-    ShieldCheck,
-    Loader2,
-    Settings2,
-    PiggyBank,
-    Clock,
-    UserPlus,
-    Wallet,
-    TrendingUp,
-    ShieldAlert,
-    RefreshCw,
-} from "lucide-react"
+import { ArrowUpRight, Banknote, Briefcase, Calendar, CheckCircle2, ChevronRight, Clock, CreditCard, Download, FileText, Filter, Loader2, MoreHorizontal, PiggyBank, Plus, RefreshCw, Search, Settings2, ShieldAlert, ShieldCheck, TrendingUp, UserPlus, Users, Wallet } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {

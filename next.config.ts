@@ -11,16 +11,17 @@ const nextConfig: NextConfig = {
     optimizeCss: false,
     
     // Better scroll restoration
-    scrollRestoration: true,
-    
+    serverMinification: true,
+    optimizePackageImports: [
+        'lucide-react',
+        'framer-motion',
+        'recharts',
+        'date-fns',
+        '@radix-ui/react-icons',
+        'lodash'
+    ],
     // Memory optimizations
     parallelServerBuildTraces: false,
-
-    // Optimize specifically for server/edge runtime
-    serverMinification: true,
-    
-    // Tree-shaking optimizations
-    optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts', 'date-fns'],
   },
   
   // Disable heavy checks during build to save memory
@@ -29,7 +30,17 @@ const nextConfig: NextConfig = {
   },
   
   // External packages for server components
-  serverExternalPackages: ['better-sqlite3', 'bcryptjs', 'drizzle-orm', 'drizzle-orm/better-sqlite3', 'drizzle-orm/sqlite-core'],
+  serverExternalPackages: [
+      'better-sqlite3',
+      'sqlite3',
+      'electron',
+      'bcryptjs',
+      'jsonwebtoken',
+      'postgres',
+      'xlsx',
+      'jspdf',
+      'html2canvas'
+  ],
   
   // Image optimization
   images: {

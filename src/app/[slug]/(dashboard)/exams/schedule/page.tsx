@@ -35,7 +35,7 @@ import {
     Filter,
     Plus,
     Loader2
-} from "lucide-react"
+} from 'lucide-react';
 import { examActions, termActions, academicYearActions, subjectActions, classActions } from "@/lib/electron"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -201,13 +201,11 @@ export default function ExamSchedulePage() {
 
             await examActions.create(examData)
             toast.success("Exam created successfully")
-
             setIsCreateDialogOpen(false)
-            setNewExam({ name: "", examTypeId: "", termId: "", classId: "", date: "", startTime: "", endTime: "", subjectId: "" })
             fetchData()
         } catch (error) {
-            console.error("Failed to save exam:", error)
-            toast.error("Failed to save exam")
+            console.error("Failed to create exam:", error)
+            toast.error("Failed to create exam. Please check all fields.")
         } finally {
             setIsSaving(false)
         }
@@ -216,6 +214,7 @@ export default function ExamSchedulePage() {
     const nextMonth = () => {
         if (currentMonth) setCurrentMonth(addMonths(currentMonth, 1))
     }
+
     const prevMonth = () => {
         if (currentMonth) setCurrentMonth(subMonths(currentMonth, 1))
     }
@@ -647,4 +646,3 @@ export default function ExamSchedulePage() {
         </div >
     )
 }
-

@@ -13,8 +13,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table"
-import { ChevronDown, SlidersHorizontal } from "lucide-react"
-
+import { ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,

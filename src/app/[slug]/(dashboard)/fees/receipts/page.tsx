@@ -2,13 +2,7 @@
 export const runtime = 'edge';
 
 import { useState, useEffect, useMemo, Suspense } from "react"
-import {
-    Search, Filter, Plus, FileText, Download, Printer,
-    MoreVertical, Eye, Trash2, Calendar, User, CreditCard,
-    ChevronRight, ArrowUpDown, Layers, RefreshCw, X, Receipt,
-    Briefcase, GraduationCap, CheckCircle2, AlertCircle, Clock, Hash,
-    Loader2, Sparkles, FilterX
-} from "lucide-react"
+import { AlertCircle, ArrowUpDown, Briefcase, Calendar, CheckCircle2, ChevronRight, Clock, CreditCard, Download, Eye, FileText, Filter, FilterX, GraduationCap, Hash, Layers, Loader2, MoreVertical, Plus, Printer, Receipt, RefreshCw, Search, Sparkles, Trash2, User, X } from 'lucide-react';
 import { feeActions, studentActions, schoolProfileActions } from "@/lib/electron"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

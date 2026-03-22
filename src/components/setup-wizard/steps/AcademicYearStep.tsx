@@ -2,18 +2,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import {
-    Calendar,
-    Info,
-    Clock,
-    ArrowLeft,
-    ArrowRight,
-    Plus,
-    Trash2,
-    CheckCircle2,
-    Layers
-} from "lucide-react"
-
+import { ArrowLeft, ArrowRight, Calendar, CheckCircle2, Clock, Info, Layers, Plus, Trash2 } from 'lucide-react';
 interface AcademicYearStepProps {
     data: any
     onUpdate: (data: any) => void

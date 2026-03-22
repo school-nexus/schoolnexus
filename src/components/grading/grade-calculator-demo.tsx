@@ -12,8 +12,7 @@ import {
     calculateGrade,
     type SubjectResult
 } from "@/lib/grading/uneb-ple"
-import { Award, TrendingUp, Calculator } from "lucide-react"
-
+import { Award, Calculator, TrendingUp } from 'lucide-react';
 export function GradeCalculatorDemo() {
     const [subjects, setSubjects] = useState<SubjectResult[]>([
         { subject: "English", score: 85 },

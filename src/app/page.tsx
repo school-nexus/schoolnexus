@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { School, CheckCircle2, ShieldCheck, BookOpen, Clock, Users, Database } from "lucide-react"
+import { BookOpen, CheckCircle2, Clock, Database, School, ShieldCheck, Users } from 'lucide-react';
 import Link from "next/link"
 
 export default function LandingPage() {

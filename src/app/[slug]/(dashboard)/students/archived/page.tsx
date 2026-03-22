@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
-import { RotateCcw, Trash2, Users, Archive, Loader2, ChevronRight, Search, CheckCircle, GraduationCap } from "lucide-react"
+import { Archive, CheckCircle, ChevronRight, GraduationCap, Loader2, RotateCcw, Search, Trash2, Users } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"

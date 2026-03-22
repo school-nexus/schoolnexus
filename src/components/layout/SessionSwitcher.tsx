@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, ChevronDown, CheckCircle2, Calendar, Clock } from "lucide-react"
+import { BookOpen, Calendar, CheckCircle2, ChevronDown, Clock } from 'lucide-react';
 import { useApp } from "@/context/AppContext"
 import { Button } from "@/components/ui/button"
 import {

@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { DataTable } from "@/components/ui/data-table"
 import { columns, Student } from "./components/columns"
 import { Button } from "@/components/ui/button"
-import { Plus, Download, Loader2, FileText, Users, Ban, CheckCircle, Trash2, ArrowUpCircle, UserCheck, XCircle, Search, GraduationCap, ChevronRight } from "lucide-react"
+import { ArrowUpCircle, Ban, CheckCircle, ChevronRight, Download, FileText, GraduationCap, Loader2, Plus, Search, Trash2, UserCheck, Users, XCircle } from 'lucide-react';
 import Link from "next/link"
 import { studentActions, streamActions, classActions, schoolProfileActions } from "@/lib/electron"
 import { toast } from "sonner"

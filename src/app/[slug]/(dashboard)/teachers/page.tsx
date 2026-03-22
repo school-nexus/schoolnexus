@@ -22,8 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Search, Filter, FileSpreadsheet, FileText, Download, Plus, Loader2 } from "lucide-react"
-
+import { Download, FileSpreadsheet, FileText, Filter, Loader2, Plus, Search } from 'lucide-react';
 const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Teachers", href: "/teachers" },

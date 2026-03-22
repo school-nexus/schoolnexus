@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Calendar, MapPin, Phone, Mail, Award, User, Fingerprint } from "lucide-react";
+import { Award, Calendar, Fingerprint, Mail, MapPin, Phone, ShieldCheck, User } from 'lucide-react';
+;
 
 interface RegistrationCardProps {
     student: any;

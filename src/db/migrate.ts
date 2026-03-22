@@ -1,5 +1,5 @@
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import { db } from './index.js';
+import { db } from './index-electron.js';
 
 // This script runs migrations on the database
 try {

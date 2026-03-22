@@ -5,7 +5,7 @@ import React, { Suspense, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { PrimaryReportTemplate } from "@/components/reports/primary-report-template"
-import { ArrowLeft, Download, Eye, Loader2 } from "lucide-react"
+import { ArrowLeft, Download, Eye, Loader2 } from 'lucide-react';
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { studentActions, reportActions, termActions } from "@/lib/electron"

@@ -2,22 +2,7 @@
 export const runtime = 'edge';
 
 import { useState, useEffect } from "react"
-import { 
-    LayoutDashboard, 
-    School as SchoolIcon, 
-    Users, 
-    Settings, 
-    LogOut, 
-    Search, 
-    Plus,
-    CreditCard,
-    CheckCircle2,
-    XCircle,
-    Loader2,
-    Calendar,
-    ArrowUpRight,
-    TrendingUp
-} from "lucide-react"
+import { ArrowUpRight, Calendar, CheckCircle2, CreditCard, LayoutDashboard, Loader2, LogOut, Plus, SchoolIcon, Search, Settings, TrendingUp, Users, XCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button"
 import { invokeIPC } from "@/lib/electron"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"

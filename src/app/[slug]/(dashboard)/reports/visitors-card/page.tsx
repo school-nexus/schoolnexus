@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Printer, UserCheck, ShieldCheck, History, Search } from "lucide-react"
+import { History, Printer, Search, ShieldCheck, UserCheck } from 'lucide-react';
 import { Badge } from "@/components/ui/badge"
 import { schoolProfileActions } from "@/lib/electron"
 import { toast } from "sonner"

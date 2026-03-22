@@ -12,7 +12,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog"
-import { AlertCircle, Loader2, Eye, EyeOff } from "lucide-react"
+import { AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from "sonner"
 import { userActions } from "@/lib/electron"
 import { Alert, AlertDescription } from "@/components/ui/alert"

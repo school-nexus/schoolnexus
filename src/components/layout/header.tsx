@@ -1,6 +1,7 @@
 'use client';
 
-import { Bell, Sun, Moon, BookOpen, ChevronDown, Search, User, Settings } from 'lucide-react';
+import { Bell, BookOpen, ChevronDown, Moon, Search, Settings, Sun, User } from 'lucide-react';
+;
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {

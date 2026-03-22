@@ -1,4 +1,5 @@
 import { Construction } from 'lucide-react';
+;
 
 interface PlaceholderPageProps {
     title: string;

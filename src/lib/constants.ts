@@ -1,4 +1,4 @@
-import { Banknote, CreditCard, Smartphone } from "lucide-react"
+import { Banknote, CreditCard, Smartphone } from 'lucide-react';
 import React from "react"
 
 export const PAYMENT_METHODS = {

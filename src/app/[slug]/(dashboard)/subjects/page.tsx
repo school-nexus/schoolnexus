@@ -40,22 +40,7 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import {
-    Plus,
-    Search,
-    MoreHorizontal,
-    BookOpen,
-    Download,
-    Filter,
-    Library,
-    Tags,
-    Layers,
-    Award,
-    ArrowRight,
-    Loader2,
-    Pencil,
-    Trash2
-} from "lucide-react"
+import { ArrowRight, Award, BookOpen, Download, Filter, Layers, Library, Loader2, MoreHorizontal, Pencil, Plus, Search, Tags, Trash2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { subjectActions } from "@/lib/electron"

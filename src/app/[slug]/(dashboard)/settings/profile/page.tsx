@@ -5,23 +5,7 @@ import { useState, useEffect } from "react"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import {
-    School,
-    Upload,
-    MapPin,
-    Phone,
-    Mail,
-    Globe,
-    Facebook,
-    Twitter,
-    Instagram,
-    Linkedin,
-    Save,
-    Camera,
-    Info,
-    CheckCircle2,
-    Loader2
-} from "lucide-react"
+import { Camera, CheckCircle2, Facebook, Globe, Info, Instagram, Linkedin, Loader2, Mail, MapPin, Phone, Save, School, Twitter, Upload } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"

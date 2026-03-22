@@ -20,8 +20,7 @@ import {
 } from "@/components/ui/select"
 import { studentActions } from "@/lib/electron"
 import { toast } from "sonner"
-import { Loader2, Pencil } from "lucide-react"
-
+import { Loader2, Pencil } from 'lucide-react';
 interface Student {
     id: number
     firstName: string

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShieldCheck, Calendar, User, Award, CheckCircle2, AlertCircle } from "lucide-react";
+import { AlertCircle, Award, Calendar, CheckCircle2, ShieldCheck, User } from 'lucide-react';
+;
 import { Badge } from "@/components/ui/badge";
 
 interface ExaminationCardProps {
