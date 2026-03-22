@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { School, CheckCircle2, ShieldCore, BookOpen, Clock, Users, Database } from "lucide-react"
+import { School, CheckCircle2, ShieldCheck, BookOpen, Clock, Users, Database } from "lucide-react"
 import Link from "next/link"
 
 export default function LandingPage() {
@@ -127,7 +127,7 @@ export default function LandingPage() {
                         {[
                             { icon: Users, title: "Student Management", desc: "Track attendance, performance, and easily communicate with guardians." },
                             { icon: BookOpen, title: "Curriculum Engine", desc: "Plan lessons, manage subjects, and grade exams with intuitive tools." },
-                            { icon: ShieldCore, title: "Secure Data", desc: "Enterprise-grade security ensuring student records are always protected." },
+                            { icon: ShieldCheck, title: "Secure Data", desc: "Enterprise-grade security ensuring student records are always protected." },
                             { icon: CheckCircle2, title: "Automated Workflows", desc: "Reduce administrative burden by automating repetitive daily tasks." },
                             { icon: Database, title: "Financial Hub", desc: "Manage fee collections, payroll, and generate comprehensive financial reports." },
                             { icon: Clock, title: "Real-time Analytics", desc: "Instant insights into school performance metrics right from your dashboard." }

@@ -12,7 +12,7 @@ export async function SetupPageContent({ slug }: SetupPageContentProps) {
     const isPlatform = slug === 'platform' || !slug
 
     // 1. Initialize Database Context
-    let env: CloudflareEnv;
+    let env: CloudflareEnv | null = null;
     let isContextError = false;
     try {
         env = getRequestContext().env as unknown as CloudflareEnv;
