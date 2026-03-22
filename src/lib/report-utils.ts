@@ -1,6 +1,4 @@
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
-import * as XLSX from "xlsx"
+import type { jsPDF } from "jspdf"
 
 export interface SchoolProfile {
     name: string
@@ -88,7 +86,10 @@ export interface ExportOptions {
 }
 
 export const reportUtils = {
-    exportToPDF: ({ title, subtitle, filename, columns, data, orientation = "p" }: ExportOptions) => {
+    exportToPDF: async ({ title, subtitle, filename, columns, data, orientation = "p" }: ExportOptions) => {
+        const { default: jsPDF } = await import("jspdf")
+        const { default: autoTable } = await import("jspdf-autotable")
+        
         const doc = new jsPDF(orientation) as jsPDFWithPlugin
 
         // Header
@@ -120,7 +121,7 @@ export const reportUtils = {
                 const str = "Page " + doc.internal.getNumberOfPages()
                 doc.setFontSize(8)
                 const pageSize = doc.internal.pageSize
-                const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight()
+                const pageHeight = (pageSize as any).height ? (pageSize as any).height : pageSize.getHeight()
                 doc.text(str, data.settings.margin.left, pageHeight - 10)
             }
         })
@@ -128,7 +129,9 @@ export const reportUtils = {
         doc.save(`${filename}.pdf`)
     },
 
-    exportToExcel: ({ filename, columns, data }: Omit<ExportOptions, "title" | "subtitle" | "orientation">) => {
+    exportToExcel: async ({ filename, columns, data }: Omit<ExportOptions, "title" | "subtitle" | "orientation">) => {
+        const XLSX = await import("xlsx")
+        
         // Prepare data for Excel
         const excelData = data.map((row: Record<string, unknown>) => {
             const newRow: Record<string, unknown> = {}
@@ -155,7 +158,10 @@ export const reportUtils = {
         XLSX.writeFile(workbook, `${filename}.xlsx`)
     },
 
-    generateReportCardPDF: (reportData: ReportData[], schoolInfo: SchoolProfile) => {
+    generateReportCardPDF: async (reportData: ReportData[], schoolInfo: SchoolProfile) => {
+        const { default: jsPDF } = await import("jspdf")
+        const { default: autoTable } = await import("jspdf-autotable")
+        
         const doc = new jsPDF() as jsPDFWithPlugin
 
         reportData.forEach((data, index) => {

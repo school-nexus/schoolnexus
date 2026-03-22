@@ -126,7 +126,7 @@ export default function GuardianReportsPage() {
                         <Button
                             variant="outline"
                             className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 h-11 rounded-xl shadow-sm"
-                            onClick={() => reportUtils.exportToExcel({
+                            onClick={async () => await reportUtils.exportToExcel({
                                 filename: "Guardian_Report",
                                 columns: [
                                     { header: "Full Name", dataKey: "fullName" },
@@ -142,7 +142,7 @@ export default function GuardianReportsPage() {
                         </Button>
                         <Button
                             className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 h-11 px-6 rounded-xl transition-all hover:scale-[1.02]"
-                            onClick={() => reportUtils.exportToPDF({
+                            onClick={async () => await reportUtils.exportToPDF({
                                 title: "Guardian Information Report",
                                 subtitle: `Generated for ${filteredGuardians.length} guardians`,
                                 filename: "Guardian_Report",
@@ -159,8 +159,6 @@ export default function GuardianReportsPage() {
                         </Button>
                     </div>
                 </div>
-
-                {/* Quick Stats Removed as requested */}
 
                 {/* Filter Section */}
                 <Card className="border-none shadow-lg shadow-slate-200/40 bg-white/90 backdrop-blur-xl ring-1 ring-slate-200/50 mb-6">
@@ -343,4 +341,3 @@ export default function GuardianReportsPage() {
         </div>
     )
 }
-

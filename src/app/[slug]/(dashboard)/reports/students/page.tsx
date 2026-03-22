@@ -148,8 +148,8 @@ export default function StudentReportsPage() {
     const totalPages = Math.ceil(filteredStudents.length / ITEMS_PER_PAGE)
     const paginatedStudents = filteredStudents.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
-    const handleDownloadDossier = (student: Student) => {
-        reportUtils.exportToPDF({
+    const handleDownloadDossier = async (student: Student) => {
+        await reportUtils.exportToPDF({
             title: `Student Dossier: ${student.firstName} ${student.lastName}`,
             subtitle: `Admission No: ${student.admissionNumber} | Class: ${getClassName(student)}`,
             filename: `Dossier_${student.admissionNumber}`,
@@ -198,7 +198,7 @@ export default function StudentReportsPage() {
                         <Button
                             variant="outline"
                             className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 h-11 rounded-xl shadow-sm"
-                            onClick={() => reportUtils.exportToExcel({
+                            onClick={async () => await reportUtils.exportToExcel({
                                 filename: "Student_Info_Report",
                                 columns: [
                                     { header: "Admission No.", dataKey: "admissionNumber" },
@@ -219,7 +219,7 @@ export default function StudentReportsPage() {
                         </Button>
                         <Button
                             className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 h-11 px-6 rounded-xl transition-all hover:scale-[1.02]"
-                            onClick={() => reportUtils.exportToPDF({
+                            onClick={async () => await reportUtils.exportToPDF({
                                 title: "Student Information Report",
                                 subtitle: `Generated for ${filteredStudents.length} students | Filters: ${selectedClass !== 'all' ? 'Class applied' : 'None'}`,
                                 filename: "Student_Info_Report",
@@ -482,4 +482,3 @@ export default function StudentReportsPage() {
         </div>
     )
 }
-

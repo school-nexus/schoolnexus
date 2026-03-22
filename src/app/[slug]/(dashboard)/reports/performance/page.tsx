@@ -158,6 +158,8 @@ export default function PerformanceReportsPage() {
             ])
             setClasses(classesData)
             setStreams(streamsData)
+            setClasses(classesData)
+            setStreams(streamsData)
             setSubjects(subjectsData)
             setTerms(termsData)
 
@@ -234,7 +236,7 @@ export default function PerformanceReportsPage() {
                         <Button
                             variant="outline"
                             className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 h-11 rounded-xl shadow-sm"
-                            onClick={() => reportUtils.exportToExcel({
+                            onClick={async () => await reportUtils.exportToExcel({
                                 filename: `Performance_Report_${classes.find(c => c.id.toString() === selectedClass)?.name || 'Class'}`,
                                 columns: [
                                     { header: "Subject", dataKey: "subject" },
@@ -247,7 +249,7 @@ export default function PerformanceReportsPage() {
                         </Button>
                         <Button
                             className="bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20 h-11 px-6 rounded-xl"
-                            onClick={() => reportUtils.exportToPDF({
+                            onClick={async () => await reportUtils.exportToPDF({
                                 title: "Class Performance Analysis",
                                 subtitle: `${classes.find(c => c.id.toString() === selectedClass)?.name || 'Class'} - ${activeTerm?.name || 'Term'}`,
                                 filename: "Performance_Report",

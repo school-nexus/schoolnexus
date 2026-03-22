@@ -139,7 +139,7 @@ export default function TeacherReportsPage() {
                         <Button
                             variant="outline"
                             className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 h-11 rounded-xl shadow-sm"
-                            onClick={() => reportUtils.exportToExcel({
+                            onClick={async () => await reportUtils.exportToExcel({
                                 filename: "Teacher_Report",
                                 columns: [
                                     { header: "First Name", dataKey: "firstName" },
@@ -157,7 +157,7 @@ export default function TeacherReportsPage() {
                         </Button>
                         <Button
                             className="bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20 h-11 px-6 rounded-xl transition-all hover:scale-[1.02]"
-                            onClick={() => reportUtils.exportToPDF({
+                            onClick={async () => await reportUtils.exportToPDF({
                                 title: "Teacher Information Report",
                                 subtitle: `Generated for ${filteredTeachers.length} teachers`,
                                 filename: "Teacher_Report",
@@ -371,4 +371,3 @@ export default function TeacherReportsPage() {
         </div>
     )
 }
-
