@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { invokeIPC } from "@/lib/electron"
 import { LoginClient } from "@/app/login/login-client"
 import { useRouter } from "next/navigation"
 
@@ -20,22 +21,17 @@ export function LoginPageContent({ slug = 'platform' }: LoginPageContentProps) {
     useEffect(() => {
         const verifySetup = async () => {
             try {
-                // Use RPC to check setup status to avoid Drizzle bloat in edge worker
-                const response = await fetch('/api/rpc', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-school-slug': slug },
-                    body: JSON.stringify({
-                        channel: 'has-completed-setup',
-                        args: []
-                    })
-                });
-                
-                if (!response.ok) throw new Error("Failed to verify setup");
-                const hasSetup = await response.json() as boolean;
+                // Use resilient invokeIPC instead of raw fetch
+                const hasSetup = await invokeIPC<boolean>('has-completed-setup');
                 setSetupStatus({ loading: false, hasSetup, error: null });
             } catch (err: any) {
                 console.error("[Login Content] Verification error:", err);
-                setSetupStatus({ loading: false, hasSetup: true, error: err.message }); // Fallback to showing login
+                // If it's a database binding error, propagate it to show the helpful UI
+                if (err.message.includes("Database binding not found")) {
+                    setSetupStatus({ loading: false, hasSetup: null, error: err.message });
+                } else {
+                    setSetupStatus({ loading: false, hasSetup: true, error: err.message }); // Fallback to showing login
+                }
             }
         }
         verifySetup();

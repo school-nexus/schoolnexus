@@ -75,7 +75,23 @@ export const invokeIPC = async <T>(channel: string, ...args: any[]): Promise<T> 
                     return await response.json() as T;
                 }
                 
-                console.warn(`[RPC] Server returned error for ${channel}, falling back to mock data.`);
+                // Try to get error details from response
+                let errorMessage = "RPC Error";
+                try {
+                    const errorData = await response.json() as { error?: string, details?: string };
+                    errorMessage = errorData.details || errorData.error || errorMessage;
+                } catch (e) {
+                    // Fallback if not JSON
+                    errorMessage = response.statusText || errorMessage;
+                }
+                
+                console.warn(`[RPC] Server returned error for ${channel}: ${errorMessage}. Falling back to mock data.`);
+                
+                // If it's a critical infrastructure error, we might want to throw it instead of mocking
+                // to trigger the specialized UI in pages like the login page
+                if (errorMessage.includes("Database binding not found")) {
+                    throw new Error(errorMessage);
+                }
             } catch (error) {
                 console.warn(`[RPC] Connection error for ${channel}, falling back to mock data:`, error);
             }
