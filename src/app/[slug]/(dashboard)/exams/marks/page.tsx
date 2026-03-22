@@ -1,5 +1,5 @@
-export const runtime = 'edge';
 "use client"
+export const runtime = 'edge';
 
 import { useState, useEffect, useRef } from "react"
 import * as XLSX from "xlsx"

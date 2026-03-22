@@ -1,5 +1,5 @@
-export const runtime = 'edge';
 'use client';
+export const runtime = 'edge';
 
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
