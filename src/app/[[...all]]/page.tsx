@@ -125,7 +125,21 @@ export default function UniversalRouter(props: any) {
             return { type: 'dashboard', component: ViewComponent, slug };
         }
 
-        return { type: '404', component: () => <div className="p-8">View not found: {path}</div>, slug: '' };
+        return { 
+            type: '404', 
+            component: () => (
+                <div className="p-8 text-center space-y-4">
+                    <h1 className="text-2xl font-bold">View not found</h1>
+                    <p className="text-slate-500">Path: <code>/{path}</code></p>
+                    <div className="pt-8">
+                        <a href="/debug" className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors inline-block">
+                            Run Infrastructure Diagnostics
+                        </a>
+                    </div>
+                </div>
+            ), 
+            slug: '' 
+        };
     }, [params.all]);
 
     if (view.type === 'dashboard') {
