@@ -109,8 +109,6 @@ export const handleWebRequest = async (db: unknown, channel: string, args: unkno
             return await repository.settings.hasCompletedSetup(d1, schoolId);
         case 'initialize-database':
             return { success: true, message: "D1 is already initialized via migrations" };
-        case 'create-school':
-            return await repository.schools.create(d1, args[0]);
         case 'complete-setup':
         case 'mark-setup-completed':
             if (schoolId === 1) {
@@ -174,8 +172,6 @@ export const handleWebRequest = async (db: unknown, channel: string, args: unkno
             return await repository.academicYears.update(d1, schoolId, args[0]);
         case 'update-term':
             return await repository.terms.update(d1, schoolId, args[0]);
-        case 'initialize-database':
-            return { success: true, message: "Cloudflare D1 is pre-initialized via migrations" };
         case 'get-current-user':
             return null; // Handled by session mostly
         // ... add more cases as handlers are migrated
