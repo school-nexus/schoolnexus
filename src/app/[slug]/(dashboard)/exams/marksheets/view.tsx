@@ -1,5 +1,4 @@
 "use client"
-export const runtime = 'edge';
 
 import React, { useState, useEffect, useRef } from "react"
 import { type GradingScale, calculateGrade, getGradePoints, calculateAggregates, determineDivision } from "@/lib/reportCardUtils"

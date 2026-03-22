@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 import { PlaceholderPage } from '@/components/placeholder-page';
 
 export default function NotificationsPage() {

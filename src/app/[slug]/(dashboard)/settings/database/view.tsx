@@ -1,5 +1,4 @@
 "use client"
-export const runtime = 'edge';
 
 import { useState } from "react"
 import { PageHeader } from "@/components/ui/page-header"
