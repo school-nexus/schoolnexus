@@ -2,7 +2,7 @@
 $env:NODE_OPTIONS="--max-old-space-size=3072"
 # Add current directory to PATH so next-on-pages can find our 'npx.cmd' shim even if it spawns 'npx'
 $env:PATH = "$pwd;" + $env:PATH + ";C:\Program Files\nodejs;C:\Program Files\Git\bin"
-$ProjectName = "schoolnexus"
+$ProjectName = "schoolnexuspro"
 
 Write-Host "Starting Cloudflare Pages deployment for $ProjectName..." -ForegroundColor Cyan
 
@@ -22,7 +22,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Deploying to Cloudflare Pages..." -ForegroundColor Yellow
-npx.cmd wrangler pages deploy .vercel/output --project-name $ProjectName
+npx.cmd wrangler pages deploy .vercel/output/static --project-name $ProjectName
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Deployment failed!" -ForegroundColor Red

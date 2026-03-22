@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import "tailwindcss";
 
 @font-face {
@@ -39,8 +40,14 @@
     --scrollbar-thumb-hover: #94A3B8;
 }
 
+
 @layer base {
     :root {
+        --foreground-rgb: 0, 0, 0;
+        --background-start-rgb: 214, 219, 220;
+        --background-end-rgb: 255, 255, 255;
+        --font-outfit: "Outfit", sans-serif;
+
         --background: 210 40% 98%;
         --foreground: 222.2 84% 4.9%;
         --card: 0 0% 100%;
@@ -148,4 +155,16 @@
 .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
     height: 4px;
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  .glass-dark {
+    @apply bg-slate-950/40 backdrop-blur-xl border border-slate-800/50;
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-300;
+  }
 }

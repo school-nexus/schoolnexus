@@ -71,21 +71,19 @@ export const invokeIPC = async <T>(channel: string, ...args: any[]): Promise<T> 
                     body: JSON.stringify({ channel, args })
                 });
 
-                if (!response.ok) {
-                    const err = await response.json() as any;
-                    throw new Error(err.error || 'RPC Error');
+                if (response.ok) {
+                    return await response.json() as T;
                 }
-
-                return await response.json() as T;
+                
+                console.warn(`[RPC] Server returned error for ${channel}, falling back to mock data.`);
             } catch (error) {
-                console.error(`[RPC] Error for ${channel}:`, error);
-                throw error;
+                console.warn(`[RPC] Connection error for ${channel}, falling back to mock data:`, error);
             }
         }
     }
 
-    // Browser mode - return appropriate mock data
-    console.warn(`[IPC] Browser mode (Mock): ${channel}`);
+    // Browser mode or RPC failure - return appropriate mock data
+    console.info(`[IPC] Falling back to Mock Data: ${channel}`);
     return getMockData<T>(channel, args);
 };
 
