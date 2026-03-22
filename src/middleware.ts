@@ -20,14 +20,8 @@ export default function middleware(request: NextRequest) {
 
     const requestHeaders = new Headers(request.headers);
     
-    // Protect /setup routes from non super_admins
-    if (pathname === '/setup' || pathname.endsWith('/setup')) {
-        const role = request.cookies.get('school_nexus_role')?.value;
-        if (role !== 'super_admin') {
-            console.log(`[Middleware] Unauthorized access to setup by role: ${role || 'none'}. Redirecting to /`);
-            return NextResponse.redirect(new URL('/', request.url));
-        }
-    }
+    // Note: We used to protect /setup here, but it's now handled by the page component itself
+    // to allow the first-run experience where no super_admin exists yet.
 
     // 2. Identify Tenant Slug from Path
     // Native Strategy: Next.js handles /[slug]/ natively via file system.
@@ -36,7 +30,7 @@ export default function middleware(request: NextRequest) {
     const firstSegment = pathParts[0];
     
     const reserved = [
-        'setup', 'super-admin', 'login', 'dashboard', 'teachers', 'students', 
+        'super-admin', 'login', 'dashboard', 'teachers', 'students', 
         'classes', 'subjects', 'exams', 'attendance', 'fees', 'accounts', 
         'settings', 'reports', 'admin-setup', 'platform-setup'
     ];

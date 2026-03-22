@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { invokeIPC } from "@/lib/electron"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,6 +25,30 @@ import Link from "next/link"
 export default function LandingPageContent() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitSuccess, setSubmitSuccess] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        const checkSetup = async () => {
+            try {
+                const hasSetup = await invokeIPC<boolean>('has-completed-setup');
+                if (hasSetup === false) {
+                    window.location.href = "/setup";
+                    return;
+                }
+                setIsLoading(false);
+            } catch (err) {
+                console.error("[Landing Page] Setup check error:", err);
+                setIsLoading(false); // Fallback to showing landing page
+            }
+        };
+        checkSetup();
+    }, []);
+
+    if (isLoading) {
+        return <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+        </div>
+    }
 
     const handleContactSubmit = async (e: React.FormEvent) => {
         e.preventDefault()

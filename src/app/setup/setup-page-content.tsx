@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { invokeIPC } from "@/lib/electron"
 import { SetupWizardClient } from "./setup-wizard-client"
 
 interface SetupPageContentProps {
@@ -18,22 +19,17 @@ export function SetupPageContent({ slug }: SetupPageContentProps) {
     useEffect(() => {
         const verifySetup = async () => {
             try {
-                // Use RPC to check setup status
-                const response = await fetch('/api/rpc', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-school-slug': slug || 'platform' },
-                    body: JSON.stringify({
-                        channel: 'has-completed-setup',
-                        args: []
-                    })
-                });
-                
-                if (!response.ok) throw new Error("Failed to verify setup");
-                const hasSetup = await response.json() as boolean;
+                // Use resilient invokeIPC
+                const hasSetup = await invokeIPC<boolean>('has-completed-setup');
                 setSetupStatus({ loading: false, hasSetup, error: null });
             } catch (err: any) {
                 console.error("[Setup Content] Verification error:", err);
-                setSetupStatus({ loading: false, hasSetup: false, error: err.message });
+                // If it's a critical infrastructure error, keep loading=false but set error
+                if (err.message.includes("Database binding not found")) {
+                    setSetupStatus({ loading: false, hasSetup: null, error: err.message });
+                } else {
+                    setSetupStatus({ loading: false, hasSetup: false, error: err.message });
+                }
             }
         }
         verifySetup();
