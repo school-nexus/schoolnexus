@@ -87,9 +87,12 @@ export const invokeIPC = async <T>(channel: string, ...args: any[]): Promise<T> 
                 
                 console.warn(`[RPC] Server returned error for ${channel}: ${errorMessage}. Falling back to mock data.`);
                 
-                // If it's a critical infrastructure error, we might want to throw it instead of mocking
-                // to trigger the specialized UI in pages like the login page
-                if (errorMessage.includes("Database binding not found")) {
+                // If it's a critical infrastructure error, we throw it to trigger UI alerts
+                // BUT ONLY in production or if we're not running locally
+                const isProduction = typeof window !== 'undefined' && 
+                    (window.location.hostname.includes('pages.dev') || window.location.hostname.includes('schoolnexuspro'));
+                
+                if (errorMessage.includes("Database binding not found") && isProduction) {
                     throw new Error(errorMessage);
                 }
             } catch (error) {
