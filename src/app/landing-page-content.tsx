@@ -1,5 +1,4 @@
 "use client"
-export const runtime = 'edge';
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -8,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { BookOpen, CheckCircle2, Clock, Database, School, ShieldCheck, Users } from 'lucide-react';
 import Link from "next/link"
 
-export default function LandingPage() {
+export default function LandingPageContent() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitSuccess, setSubmitSuccess] = useState(false)
 
