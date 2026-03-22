@@ -1,5 +1,5 @@
 import { repository, type DrizzleDB } from '@/db/repository';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 
 /**
@@ -17,6 +17,29 @@ export const handleWebRequest = async (db: unknown, channel: string, args: unkno
     }
 
     switch (channel) {
+        case 'get-platform-stats': {
+            const schoolsCount = await d1.select({ count: sql`count(*)` }).from(schema.schools);
+            const usersCount = await d1.select({ count: sql`count(*)` }).from(schema.users).where(and(eq(schema.users.isActive, true), sql`${schema.users.schoolId} IS NOT NULL`));
+            return {
+                totalSchools: Number((schoolsCount[0] as any).count || 0),
+                activeUsers: Number((usersCount[0] as any).count || 0),
+                systemStatus: 'Healthy'
+            };
+        }
+        case 'get-recent-schools':
+            return await d1.select().from(schema.schools).orderBy(sql`${schema.schools.createdAt} DESC`).limit(5);
+        case 'get-plan-usage-stats': {
+            const plans = await d1.select().from(schema.subscriptionPlans);
+            const stats = await Promise.all(plans.map(async (plan) => {
+                const count = await d1.select({ count: sql`count(*)` }).from(schema.subscriptions).where(eq(schema.subscriptions.planId, plan.id));
+                return {
+                    name: plan.name,
+                    price: plan.termlyPrice,
+                    count: Number((count[0] as any).count || 0)
+                };
+            }));
+            return stats;
+        }
         case 'get-all-schools':
             return await repository.schools.getAll(d1);
         case 'create-school':
