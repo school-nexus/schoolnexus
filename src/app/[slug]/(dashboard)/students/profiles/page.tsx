@@ -913,8 +913,8 @@ function StudentProfilesContent() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={async () => {
-                                                await reportUtils.exportToPDF({
+                                            onClick={() => {
+                                                reportUtils.exportToPDF({
                                                     title: `Academic Report: ${selectedStudent.firstName} ${selectedStudent.lastName}`,
                                                     subtitle: `Admission No: ${selectedStudent.admissionNumber}`,
                                                     filename: `Academic_Report_${selectedStudent.admissionNumber}`,

@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
     
     // Memory optimizations
     parallelServerBuildTraces: false,
+
+    // Optimize specifically for server/edge runtime
+    serverMinification: true,
+    
+    // Tree-shaking optimizations
+    optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts', 'date-fns'],
   },
   
   // Disable heavy checks during build to save memory

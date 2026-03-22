@@ -2,6 +2,9 @@
 export const runtime = 'edge';
 
 import { useState, useEffect, useRef } from "react"
+import * as XLSX from "xlsx"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -48,7 +51,6 @@ import {
 import { studentActions, examActions, classActions, streamActions, subjectActions, marksActions, schoolProfileActions } from "@/lib/electron"
 import { calculateGrade } from "@/lib/reportCardUtils"
 import { toast } from "sonner"
-import type { jsPDF } from "jspdf"
 
 interface RawClass {
     id: number
@@ -205,11 +207,10 @@ export default function MarkEntryPage() {
         : 0
     const highestScore = Math.max(...Object.values(marks), 0)
 
-    const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
 
-        const XLSX = await import("xlsx")
         const reader = new FileReader()
         reader.onload = (evt) => {
             try {
@@ -266,14 +267,13 @@ export default function MarkEntryPage() {
         if (fileInputRef.current) fileInputRef.current.value = ""
     }
 
-    const handleDownloadTemplate = async () => {
+    const handleDownloadTemplate = () => {
         if (students.length === 0) {
             toast.error("Please load students first to generate a template.")
             return
         }
 
         try {
-            const XLSX = await import("xlsx")
             const templateData = students.map(s => ({
                 "Admission Number": s.admissionNumber,
                 "Student Name": `${s.firstName} ${s.lastName}`,
@@ -301,14 +301,13 @@ export default function MarkEntryPage() {
         }
     }
 
-    const handleDownloadReport = async () => {
+    const handleDownloadReport = () => {
         if (students.length === 0) {
             toast.error("No data to download. Please load students first.")
             return
         }
 
         try {
-            const XLSX = await import("xlsx")
             const reportData = students.map((s, idx) => ({
                 "No.": idx + 1,
                 "Admission Number": s.admissionNumber,
@@ -360,8 +359,6 @@ export default function MarkEntryPage() {
         }
 
         try {
-            const { default: jsPDF } = await import("jspdf")
-            const { default: autoTable } = await import("jspdf-autotable")
             const profile = await schoolProfileActions.get() as { name: string, address: string, phone: string, email: string }
             const doc = new jsPDF('p', 'mm', 'a4')
             const pageWidth = doc.internal.pageSize.getWidth()
@@ -753,3 +750,5 @@ export default function MarkEntryPage() {
         </div>
     )
 }
+
+

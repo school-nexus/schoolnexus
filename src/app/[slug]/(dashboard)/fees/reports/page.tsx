@@ -51,9 +51,10 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { feeActions, studentActions, classActions, termActions, schoolProfileActions, dashboardActions, invoiceActions } from "@/lib/electron"
 import { toast } from "sonner"
-import type { jsPDF } from "jspdf"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 import { cn } from "@/lib/utils"
-import { createStandardPDF, addStandardFooter, standardTableStyles } from "@/lib/pdfUtils"
+import { createStandardPDF, addStandardFooter, addInfoBox, standardTableStyles } from "@/lib/pdfUtils"
 
 interface ReportType {
     id: string
@@ -374,33 +375,31 @@ export default function FeeReportsPage() {
     const generatePDFReport = async () => {
         if (!selectedReport || !schoolProfile) return
 
-        const { doc, pageWidth, margin } = await createStandardPDF({
+        const { doc, pageWidth, margin } = createStandardPDF({
             title: selectedReport.title,
             subtitle: `Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
             schoolProfile,
             filename: `${selectedReport.id}_report_${Date.now()}.pdf`
         })
 
-        const { default: autoTable } = await import("jspdf-autotable")
-
         switch (selectedReport.id) {
             case "collection":
-                await generateCollectionPDF(doc, autoTable, margin, pageWidth)
+                await generateCollectionPDF(doc, margin, pageWidth)
                 break
             case "balances":
-                await generateBalancesPDF(doc, autoTable, margin, pageWidth)
+                await generateBalancesPDF(doc, margin, pageWidth)
                 break
             case "daily":
-                await generateDailyPDF(doc, autoTable, margin, pageWidth)
+                await generateDailyPDF(doc, margin, pageWidth)
                 break
             case "class":
-                await generateClassPDF(doc, autoTable, margin, pageWidth)
+                await generateClassPDF(doc, margin, pageWidth)
                 break
             case "student":
-                await generateStudentPDF(doc, autoTable, margin, pageWidth)
+                await generateStudentPDF(doc, margin, pageWidth)
                 break
             case "invoices":
-                await generateInvoicePDF(doc, autoTable, margin, pageWidth)
+                await generateInvoicePDF(doc, margin, pageWidth)
                 break
         }
 
@@ -410,7 +409,7 @@ export default function FeeReportsPage() {
     }
 
 
-    const generateCollectionPDF = async (doc: jsPDF, autoTable: any, margin: number, pageWidth: number) => {
+    const generateCollectionPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
         const payments = await feeActions.getAllPayments() as RawPayment[]
 
         let y = 45
@@ -439,7 +438,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateBalancesPDF = async (doc: jsPDF, autoTable: any, margin: number, pageWidth: number) => {
+    const generateBalancesPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
         const debtors = await dashboardActions.getTopDebtors() as RawDebtor[]
 
         let y = 45
@@ -466,7 +465,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateDailyPDF = async (doc: jsPDF, autoTable: any, margin: number, pageWidth: number) => {
+    const generateDailyPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
         const payments = await feeActions.getAllPayments() as RawPayment[]
         const filtered = payments.filter((p: RawPayment) => p.date === selectedDate)
         const total = filtered.reduce((sum: number, p: RawPayment) => sum + p.amount, 0)
@@ -494,7 +493,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateClassPDF = async (doc: jsPDF, autoTable: any, margin: number, pageWidth: number) => {
+    const generateClassPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
         if (selectedClass === "all") throw new Error("Select a class")
 
         const payments = await feeActions.getAllPayments() as RawPayment[]
@@ -524,7 +523,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateStudentPDF = async (doc: jsPDF, autoTable: any, margin: number, pageWidth: number) => {
+    const generateStudentPDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
         if (!selectedStudent) throw new Error("Select a student")
 
         const student = students.find(s => s.id === parseInt(selectedStudent))
@@ -560,7 +559,7 @@ export default function FeeReportsPage() {
         })
     }
 
-    const generateInvoicePDF = async (doc: jsPDF, autoTable: any, margin: number, pageWidth: number) => {
+    const generateInvoicePDF = async (doc: jsPDF, margin: number, pageWidth: number) => {
         const invoices = await invoiceActions.getAll() as RawInvoiceData[]
 
         let y = 45

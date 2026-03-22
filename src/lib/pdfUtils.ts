@@ -1,4 +1,4 @@
-import type { jsPDF as jsPDFType } from "jspdf"
+import jsPDF from "jspdf"
 
 export interface SchoolProfile {
     name: string
@@ -15,8 +15,7 @@ export interface PDFOptions {
     margin?: number;
 }
 
-export const createStandardPDF = async (options: PDFOptions) => {
-    const { default: jsPDF } = await import("jspdf")
+export const createStandardPDF = (options: PDFOptions) => {
     const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -35,7 +34,7 @@ export const createStandardPDF = async (options: PDFOptions) => {
     return { doc, pageWidth, margin }
 }
 
-export const addSchoolHeader = (doc: jsPDFType, profile: SchoolProfile, margin: number, pageWidth: number) => {
+export const addSchoolHeader = (doc: jsPDF, profile: SchoolProfile, margin: number, pageWidth: number) => {
     // School Logo Placeholder (Box with initials)
     doc.setFillColor(5, 150, 105) // Emerald-600
     doc.rect(margin, margin, 15, 15, "F")
@@ -67,7 +66,7 @@ export const addSchoolHeader = (doc: jsPDFType, profile: SchoolProfile, margin: 
     doc.line(margin, margin + 25, pageWidth - margin, margin + 25)
 }
 
-export const addDocumentTitle = (doc: jsPDFType, title: string, margin: number, pageWidth: number, subtitle?: string) => {
+export const addDocumentTitle = (doc: jsPDF, title: string, margin: number, pageWidth: number, subtitle?: string) => {
     const y = margin + 35
     doc.setTextColor(15, 23, 42) // Slate-900
     doc.setFontSize(14)
@@ -82,7 +81,7 @@ export const addDocumentTitle = (doc: jsPDFType, title: string, margin: number, 
     }
 }
 
-export const addInfoBox = (doc: jsPDFType, label: string, value: string, x: number, y: number, width: number, height: number, variant: 'default' | 'emerald' = 'default') => {
+export const addInfoBox = (doc: jsPDF, label: string, value: string, x: number, y: number, width: number, height: number, variant: 'default' | 'emerald' = 'default') => {
     const isEmerald = variant === 'emerald'
 
     doc.setFillColor(isEmerald ? 236 : 248, isEmerald ? 253 : 250, isEmerald ? 245 : 252) // Emerald-50 or Slate-50
@@ -98,7 +97,7 @@ export const addInfoBox = (doc: jsPDFType, label: string, value: string, x: numb
     doc.text(value, x + 5, y + 14)
 }
 
-export const addStandardFooter = (doc: jsPDFType, profile: SchoolProfile, margin: number, pageWidth: number, slogan?: string) => {
+export const addStandardFooter = (doc: jsPDF, profile: SchoolProfile, margin: number, pageWidth: number, slogan?: string) => {
     const pageHeight = doc.internal.pageSize.getHeight()
     doc.setDrawColor(226, 232, 240)
     doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15)
