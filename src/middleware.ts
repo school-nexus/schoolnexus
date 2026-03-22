@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export const runtime = 'experimental-edge';
+export const runtime = 'edge';
 
 export default function middleware(request: NextRequest) {
     const url = request.nextUrl;
     const pathname = url.pathname;
 
-    // 1. Skip internal paths and assets
+    // 1. Skip internal paths and all physical assets (anything with a dot)
     if (
         pathname.startsWith('/_next') || 
-        pathname.startsWith('/api') ||
-        pathname.startsWith('/favicon.ico') ||
-        pathname.startsWith('/logo.png') ||
-        pathname.includes('.') 
+        pathname.startsWith('/api/') ||
+        pathname === '/favicon.ico' ||
+        pathname === '/logo.png' ||
+        pathname.includes('.') ||
+        pathname.startsWith('/assets/')
     ) {
         return NextResponse.next();
     }
@@ -63,12 +64,12 @@ export default function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         /*
-         * Match all request paths except for the ones starting with:
-         * - api (API routes)
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
+         * Match all request paths except for:
+         * 1. /api (API routes)
+         * 2. /_next (Next.js internals)
+         * 3. Static files (favicon.ico, logo.png, etc.)
+         * 4. Files with extensions (detected by presence of a dot)
          */
-        '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        '/((?!api|_next|favicon.ico|logo.png|.*\\.).*)',
     ],
 };
