@@ -1,5 +1,15 @@
-import { Sidebar } from './sidebar';
-import { Header } from './header';
+
+import dynamic from 'next/dynamic';
+
+const Sidebar = dynamic(() => import('./sidebar').then(mod => mod.Sidebar), { 
+    ssr: false,
+    loading: () => <div className="w-64 h-full bg-emerald-950 animate-pulse" />
+});
+
+const Header = dynamic(() => import('./header').then(mod => mod.Header), { 
+    ssr: false,
+    loading: () => <div className="h-12 w-full bg-emerald-600 animate-pulse" />
+});
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -18,4 +28,5 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
     );
 }
+
 
