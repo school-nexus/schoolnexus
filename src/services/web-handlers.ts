@@ -46,6 +46,8 @@ export const handleWebRequest = async (db: unknown, channel: string, args: unkno
             return await repository.schools.create(d1, args[0]);
         case 'get-plans':
             return await repository.subscriptions.getPlans(d1);
+        case 'create-plan':
+            return await repository.subscriptions.createPlan(d1, args[0]);
         case 'get-subscription-plans':
             return await d1.select().from(schema.subscriptionPlans);
         case 'get-school-subscription':

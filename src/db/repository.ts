@@ -147,6 +147,9 @@ export const repository = {
         getPlans: async (db: DrizzleDB) => {
             return await db.select().from(subscriptionPlans);
         },
+        createPlan: async (db: DrizzleDB, data: any) => {
+            return await db.insert(subscriptionPlans).values(data).returning();
+        },
         getForSchool: async (db: DrizzleDB, schoolId: number) => {
             return await db.select().from(subscriptions).where(eq(subscriptions.schoolId, schoolId));
         },

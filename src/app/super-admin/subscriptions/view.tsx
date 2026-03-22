@@ -3,37 +3,82 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CreditCard, Zap, CheckCircle2, TrendingUp, Loader2 } from 'lucide-react';
+import { CreditCard, Zap, CheckCircle2, TrendingUp, Loader2, Plus } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 export default function SubscriptionsView() {
     const [plans, setPlans] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [isPlanOpen, setIsPlanOpen] = useState(false)
+    const [planLoading, setPlanLoading] = useState(false)
+
+    // Form State
+    const [formData, setFormData] = useState({
+        name: '',
+        termlyPrice: '',
+        annualPrice: '',
+        studentLimit: -1
+    })
+
+    const fetchPlans = async () => {
+        setLoading(true);
+        try {
+            const [allPlans, usageStats] = await Promise.all([
+                (window as any).electron.ipcRenderer.invoke('get-subscription-plans'),
+                (window as any).electron.ipcRenderer.invoke('get-plan-usage-stats')
+            ]);
+
+            if (usageStats && usageStats.length > 0) {
+                setPlans(usageStats);
+            } else if (allPlans) {
+                setPlans(allPlans.map((p: any) => ({
+                    name: p.name,
+                    price: p.termlyPrice,
+                    count: 0
+                })));
+            }
+        } catch (error) {
+            console.error("Failed to fetch subscription data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
-        async function fetchPlans() {
-            try {
-                const [allPlans, usageStats] = await Promise.all([
-                    (window as any).electron.ipcRenderer.invoke('get-subscription-plans'),
-                    (window as any).electron.ipcRenderer.invoke('get-plan-usage-stats')
-                ]);
-
-                if (usageStats) {
-                    setPlans(usageStats);
-                } else if (allPlans) {
-                    setPlans(allPlans.map((p: any) => ({
-                        name: p.name,
-                        price: p.termlyPrice,
-                        count: 0
-                    })));
-                }
-            } catch (error) {
-                console.error("Failed to fetch subscription data:", error);
-            } finally {
-                setLoading(false);
-            }
-        }
         fetchPlans();
     }, [])
+
+    const handleCreatePlan = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPlanLoading(true);
+        try {
+            await (window as any).electron.ipcRenderer.invoke('create-plan', {
+                ...formData,
+                termlyPrice: Number(formData.termlyPrice),
+                annualPrice: Number(formData.annualPrice)
+            });
+            toast.success("Subscription plan created!");
+            setIsPlanOpen(false);
+            setFormData({ name: '', termlyPrice: '', annualPrice: '', studentLimit: -1 });
+            fetchPlans();
+        } catch (error) {
+            toast.error("Failed to create plan.");
+            console.error(error);
+        } finally {
+            setPlanLoading(false);
+        }
+    }
 
     return (
         <div className="space-y-6">
@@ -42,9 +87,70 @@ export default function SubscriptionsView() {
                     <h1 className="text-2xl font-black text-slate-900">Subscription Plans</h1>
                     <p className="text-slate-500 font-medium">Manage and configure pricing models for all institutions.</p>
                 </div>
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-2">
-                    <Zap className="w-5 h-5" /> New Plan
-                </Button>
+                
+                <Dialog open={isPlanOpen} onOpenChange={setIsPlanOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-2">
+                            <Plus className="w-5 h-5" /> New Plan
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px] rounded-2xl">
+                        <DialogHeader>
+                            <DialogTitle className="font-black text-xl">Create New Plan</DialogTitle>
+                            <DialogDescription className="font-medium">
+                                Define a new pricing tier for schools.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleCreatePlan} className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="plan-name" className="font-bold">Plan Name</Label>
+                                <Input 
+                                    id="plan-name" 
+                                    placeholder="e.g. Premium" 
+                                    className="rounded-xl border-slate-200"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="termly" className="font-bold">Termly Price (UGX)</Label>
+                                    <Input 
+                                        id="termly" 
+                                        type="number"
+                                        placeholder="500000" 
+                                        className="rounded-xl border-slate-200"
+                                        value={formData.termlyPrice}
+                                        onChange={(e) => setFormData({ ...formData, termlyPrice: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="annual" className="font-bold">Annual Price (UGX)</Label>
+                                    <Input 
+                                        id="annual" 
+                                        type="number"
+                                        placeholder="1200000" 
+                                        className="rounded-xl border-slate-200"
+                                        value={formData.annualPrice}
+                                        onChange={(e) => setFormData({ ...formData, annualPrice: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter className="mt-4">
+                                <Button 
+                                    type="submit" 
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl w-full h-12"
+                                    disabled={planLoading}
+                                >
+                                    {planLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Create Subscription Plan"}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

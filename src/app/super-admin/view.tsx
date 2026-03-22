@@ -3,32 +3,72 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { School, Users, ShieldCheck, Plus, ExternalLink, Loader2 } from 'lucide-react';
+import { School, Users, ShieldCheck, Plus, ExternalLink, Loader2, Check } from 'lucide-react';
 import { useRouter } from "next/navigation"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 export default function SuperAdminView() {
     const router = useRouter()
     const [stats, setStats] = useState({ totalSchools: 0, activeUsers: 0, systemStatus: 'Healthy' })
     const [recentSchools, setRecentSchools] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [isRegisterOpen, setIsRegisterOpen] = useState(false)
+    const [registerLoading, setRegisterLoading] = useState(false)
+
+    // Form State
+    const [formData, setFormData] = useState({
+        name: '',
+        slug: '',
+        status: 'Active'
+    })
+
+    const refreshData = async () => {
+        setLoading(true);
+        try {
+            const [platformStats, schools] = await Promise.all([
+                (window as any).electron.ipcRenderer.invoke('get-platform-stats'),
+                (window as any).electron.ipcRenderer.invoke('get-recent-schools')
+            ]);
+            if (platformStats) setStats(platformStats);
+            if (schools) setRecentSchools(schools);
+        } catch (error) {
+            console.error("Failed to fetch super admin data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
-        async function fetchData() {
-            try {
-                const [platformStats, schools] = await Promise.all([
-                    (window as any).electron.ipcRenderer.invoke('get-platform-stats'),
-                    (window as any).electron.ipcRenderer.invoke('get-recent-schools')
-                ]);
-                if (platformStats) setStats(platformStats);
-                if (schools) setRecentSchools(schools);
-            } catch (error) {
-                console.error("Failed to fetch super admin data:", error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchData();
+        refreshData();
     }, [])
+
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setRegisterLoading(true);
+        try {
+            await (window as any).electron.ipcRenderer.invoke('create-school', formData);
+            toast.success("School registered successfully!");
+            setIsRegisterOpen(false);
+            setFormData({ name: '', slug: '', status: 'Active' });
+            refreshData();
+        } catch (error) {
+            toast.error("Failed to register school.");
+            console.error(error);
+        } finally {
+            setRegisterLoading(false);
+        }
+    }
     
     return (
         <div className="space-y-6">
@@ -37,9 +77,62 @@ export default function SuperAdminView() {
                     <h1 className="text-2xl font-black text-slate-900">Platform Overview</h1>
                     <p className="text-slate-500 font-medium">Manage all schools and system settings from one place.</p>
                 </div>
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-2">
-                    <Plus className="w-5 h-5" /> Register New School
-                </Button>
+                
+                <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-2">
+                            <Plus className="w-5 h-5" /> Register New School
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px] rounded-2xl">
+                        <DialogHeader>
+                            <DialogTitle className="font-black text-xl">Register New Institution</DialogTitle>
+                            <DialogDescription className="font-medium">
+                                Create a new school shell. You'll be able to configure detailed profiles later.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleRegister} className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name" className="font-bold">School Name</Label>
+                                <Input 
+                                    id="name" 
+                                    placeholder="e.g. Green Valley High" 
+                                    className="rounded-xl border-slate-200"
+                                    value={formData.name}
+                                    onChange={(e) => {
+                                        const name = e.target.value;
+                                        const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '');
+                                        setFormData({ ...formData, name, slug });
+                                    }}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="slug" className="font-bold">URL Slug (unique)</Label>
+                                <div className="relative">
+                                    <Input 
+                                        id="slug" 
+                                        placeholder="green-valley" 
+                                        className="rounded-xl border-slate-200 pl-8"
+                                        value={formData.slug}
+                                        onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                                        required
+                                    />
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">/</span>
+                                </div>
+                            </div>
+                            <DialogFooter className="mt-4">
+                                <Button 
+                                    type="submit" 
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl w-full h-12"
+                                    disabled={registerLoading}
+                                >
+                                    {registerLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Complete Registration"}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
