@@ -13,6 +13,7 @@ interface SetupWizardClientProps {
 }
 
 export function SetupWizardClient({ isPlatform, schoolSlug }: SetupWizardClientProps) {
+    console.log("[Setup Wizard Client] Rendering:", { isPlatform, schoolSlug });
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const router = useRouter();

@@ -10,6 +10,7 @@ interface SetupPageContentProps {
 
 export function SetupPageContent({ slug }: SetupPageContentProps) {
     const isPlatform = slug === 'platform' || !slug
+    console.log("[Setup Page] Context Check:", { slug, isPlatform });
     const [setupStatus, setSetupStatus] = useState<{ loading: boolean, hasSetup: boolean | null, error: string | null }>({
         loading: true,
         hasSetup: null,
