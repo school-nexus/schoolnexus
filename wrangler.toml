@@ -1,13 +1,17 @@
-name = "schoolnexuspro"
-pages_build_output_dir = ".open-next/assets"
+name = "schoolnexus"
+main = ".open-next/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "NEXT_ASSETS"
 
 [vars]
 NEXT_PUBLIC_PLATFORM = "cloudflare"
 NODE_VERSION = "22"
-NEXTAUTH_URL="https://schoolnexuspro.pages.dev"
-NEXT_PUBLIC_SITE_URL = "https://schoolnexuspro.pages.dev"
+NEXTAUTH_URL = "https://schoolnexus.pages.dev"
+NEXT_PUBLIC_SITE_URL = "https://schoolnexus.pages.dev"
 
 [[d1_databases]]
 binding = "DB"

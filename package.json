@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" next dev",
     "build": "next build --webpack",
-    "build:pages": "npx @opennextjs/cloudflare build && npx esbuild .open-next/worker.js --bundle --platform=node --format=esm --outfile=.open-next/assets/_worker.js --external:node:* --external:cloudflare:*",
+    "build:pages": "npx @opennextjs/cloudflare build",
     "build:local": "cross-env NEXT_PUBLIC_PLATFORM=local next build --webpack",
     "build:stable": "cross-env NEXT_PUBLIC_PLATFORM=cloudflare NODE_OPTIONS=\"--max-old-space-size=10240\" next build --webpack",
     "deploy:cloudflare": "npx @opennextjs/cloudflare deploy",
