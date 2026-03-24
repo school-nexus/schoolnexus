@@ -6,8 +6,8 @@ pages_build_output_dir = ".vercel/output/static"
 [vars]
 NEXT_PUBLIC_PLATFORM = "cloudflare"
 NODE_VERSION = "22"
-NODE_OPTIONS = "--max-old-space-size=8192"
-NEXTAUTH_URL = "https://schoolnexuspro.pages.dev"
+NEXTAUTH_URL="https://schoolnexuspro.pages.dev"
+NEXT_PUBLIC_SITE_URL = "https://schoolnexuspro.pages.dev"
 
 [[d1_databases]]
 binding = "DB"
