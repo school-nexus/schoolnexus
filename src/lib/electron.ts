@@ -62,6 +62,7 @@ export const invokeIPC = async <T>(channel: string, ...args: any[]): Promise<T> 
                     }
                 }
 
+                console.debug(`[RPC] Calling ${channel}...`);
                 const response = await fetch('/api/rpc', {
                     method: 'POST',
                     headers: { 
@@ -72,7 +73,9 @@ export const invokeIPC = async <T>(channel: string, ...args: any[]): Promise<T> 
                 });
 
                 if (response.ok) {
-                    return await response.json() as T;
+                    const result = await response.json() as T;
+                    console.info(`[RPC] Success: ${channel}`);
+                    return result;
                 }
                 
                 // Try to get error details from response
@@ -85,7 +88,7 @@ export const invokeIPC = async <T>(channel: string, ...args: any[]): Promise<T> 
                     errorMessage = response.statusText || errorMessage;
                 }
                 
-                console.warn(`[RPC] Server returned error for ${channel}: ${errorMessage}. Falling back to mock data.`);
+                console.warn(`[RPC] Server returned error for ${channel}: ${errorMessage}.`);
                 
                 // If it's a critical infrastructure error, we throw it to trigger UI alerts
                 // BUT ONLY in production or if we're not running locally
@@ -95,14 +98,19 @@ export const invokeIPC = async <T>(channel: string, ...args: any[]): Promise<T> 
                 if (errorMessage.includes("Database binding not found") && isProduction) {
                     throw new Error(errorMessage);
                 }
+
+                // In development, if the error is about a missing table, we log it as a hint
+                if (process.env.NODE_ENV === 'development' && errorMessage.includes('no such table')) {
+                    console.warn(`[RPC] Hint: Database table missing for ${channel}. This is normal if you haven't initialized the database yet.`);
+                }
             } catch (error) {
-                console.warn(`[RPC] Connection error for ${channel}, falling back to mock data:`, error);
+                console.warn(`[RPC] Connection error for ${channel}:`, error);
             }
         }
     }
 
     // Browser mode or RPC failure - return appropriate mock data
-    console.info(`[IPC] Falling back to Mock Data: ${channel}`);
+    console.info(`[IPC] Falling back to Mock Data for ${channel}. This usually means the database is not initialized or the RPC endpoint returned an error.`);
     return getMockData<T>(channel, args);
 };
 
@@ -191,7 +199,7 @@ function getMockData<T>(channel: string, args: any[]): T {
         return false as unknown as T; // In browser/dev mode, always show setup wizard
     }
 
-    if (channel === 'save-setup-data' || channel === 'mark-setup-completed') {
+    if (channel === 'save-setup-data' || channel === 'mark-setup-completed' || channel === 'initialize-database') {
         return { success: true } as unknown as T;
     }
 

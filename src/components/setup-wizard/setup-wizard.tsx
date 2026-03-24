@@ -53,13 +53,13 @@ export type SetupWizardData = {
 
 interface SetupWizardProps {
     onComplete: (data: SetupWizardData, isInitialized?: boolean) => Promise<void>
-    isPlatform?: boolean
+    mode?: 'electron' | 'web-platform' | 'web-school'
 }
 
 const platformSteps = [
-    { title: "System Status", icon: Database, description: "Verify database connection" },
-    { title: "Super Admin", icon: User, description: "Platform administrator account" },
-    { title: "Confirmation", icon: CheckCircle, description: "Initialize platform" },
+    { title: "Infrastructure", icon: Database, description: "Initialize system storage" },
+    { title: "Super Admin", icon: User, description: "Primary administrator account" },
+    { title: "Launch", icon: CheckCircle, description: "Finalize platform setup" },
 ];
 
 const schoolSteps = [
@@ -70,7 +70,7 @@ const schoolSteps = [
     { title: "Confirmation", icon: CheckCircle, description: "Finalize onboarding" },
 ];
 
-export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps) {
+export function SetupWizard({ onComplete, mode = 'electron' }: SetupWizardProps) {
     const [currentStep, setCurrentStep] = useState(0)
     const [formData, setFormData] = useState<SetupWizardData>({
         schoolInfo: {
@@ -98,7 +98,7 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
     })
 
     // Dynamically assign steps based on mode
-    const steps = isPlatform ? platformSteps : schoolSteps;
+    const steps = mode === 'web-platform' ? platformSteps : schoolSteps;
     const currentStepData = steps[currentStep];
 
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -147,7 +147,7 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
     const getStepComponent = () => {
         switch (currentStepData.title) {
             case "Database Setup":
-            case "System Status": // Reuse logic for both
+            case "Infrastructure": // Map to DatabaseSetupStep
                 return <DatabaseSetupStep
                     data={formData.database}
                     onUpdate={(val: any) => setFormData(prev => ({ ...prev, database: { ...prev.database, ...val } }))}
@@ -156,6 +156,7 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
                     isInitializing={isInitializing}
                     isInitialized={isDbInitialized}
                     onInitialize={handleInitializeDatabase}
+                    mode={mode}
                 />;
             case "School Profile":
                 return <SchoolInfoStep
@@ -179,13 +180,14 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
                     onBack={prevStep}
                     title={currentStepData.title} // Add title prop to customize the step UI
                 />;
+            case "Launch":
             case "Confirmation":
                 return <ConfirmationStep
                     data={formData}
                     onBack={prevStep}
                     onComplete={handleFinish}
                     isSubmitting={isSubmitting}
-                    isPlatform={isPlatform}
+                    mode={mode}
                 />;
             default:
                 return null;
@@ -222,7 +224,7 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
                                 idx === currentStep ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200" :
                                     idx < currentStep ? "bg-white border-emerald-500 text-emerald-500" :
                                         "bg-white border-slate-200 text-slate-400 group-hover:border-slate-300"
-                                )}>
+                            )}>
                                 {idx < currentStep ? (
                                     <CheckCircle className="h-5 w-5" />
                                 ) : (
@@ -271,8 +273,13 @@ export function SetupWizard({ onComplete, isPlatform = false }: SetupWizardProps
                     </div>
 
                     <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide">Offline Mode Active</span>
+                        <div className={cn(
+                            "h-2 w-2 rounded-full",
+                            mode === 'electron' ? "bg-emerald-500 animate-pulse" : "bg-blue-500"
+                        )} />
+                        <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
+                            {mode === 'electron' ? 'Offline Mode Active' : 'Cloud Connectivity Active'}
+                        </span>
                     </div>
                 </div>
 

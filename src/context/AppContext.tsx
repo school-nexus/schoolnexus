@@ -76,7 +76,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     useEffect(() => {
-        refreshContext()
+        // Skip initialization if we're on the setup page
+        const isSetupPage = typeof window !== 'undefined' && 
+            (window.location.pathname === '/setup' || window.location.pathname.startsWith('/setup/'));
+            
+        if (!isSetupPage) {
+            refreshContext()
+        } else {
+            setIsLoading(false)
+        }
     }, [])
 
     return (

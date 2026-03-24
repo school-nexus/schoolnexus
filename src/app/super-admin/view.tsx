@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { School, Users, ShieldCheck, Plus, ExternalLink, Loader2, Check } from 'lucide-react';
-import { useRouter } from "next/navigation"
+import { School, Users, ShieldCheck, Plus, ExternalLink, Loader2, Check, Clock } from 'lucide-react';
+import { useRouter, useSearchParams } from "next/navigation"
+import { invokeIPC } from "@/lib/electron";
 import {
     Dialog,
     DialogContent,
@@ -20,8 +21,11 @@ import { toast } from "sonner"
 
 export default function SuperAdminView() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const activeTab = searchParams.get('tab') || 'schools'
     const [stats, setStats] = useState({ totalSchools: 0, activeUsers: 0, systemStatus: 'Healthy' })
     const [recentSchools, setRecentSchools] = useState<any[]>([])
+    const [registrationRequests, setRegistrationRequests] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [isRegisterOpen, setIsRegisterOpen] = useState(false)
     const [registerLoading, setRegisterLoading] = useState(false)
@@ -36,16 +40,38 @@ export default function SuperAdminView() {
     const refreshData = async () => {
         setLoading(true);
         try {
-            const [platformStats, schools] = await Promise.all([
-                (window as any).electron.ipcRenderer.invoke('get-platform-stats'),
-                (window as any).electron.ipcRenderer.invoke('get-recent-schools')
+            const [platformStats, schools, requests] = await Promise.all([
+                invokeIPC<any>('get-platform-stats'),
+                invokeIPC<any[]>('get-recent-schools'),
+                invokeIPC<any[]>('get-registration-requests')
             ]);
             if (platformStats) setStats(platformStats);
             if (schools) setRecentSchools(schools);
+            if (requests) setRegistrationRequests(requests);
         } catch (error) {
             console.error("Failed to fetch super admin data:", error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    const handleApproveRequest = async (schoolId: number) => {
+        try {
+            await invokeIPC('update-registration-status', { schoolId, status: 'Active' });
+            toast.success("School registration approved!");
+            refreshData();
+        } catch (error) {
+            toast.error("Failed to approve school.");
+        }
+    }
+
+    const handleRejectRequest = async (schoolId: number) => {
+        try {
+            await invokeIPC('update-registration-status', { schoolId, status: 'Rejected' });
+            toast.success("School registration rejected!");
+            refreshData();
+        } catch (error) {
+            toast.error("Failed to reject school.");
         }
     }
 
@@ -57,7 +83,7 @@ export default function SuperAdminView() {
         e.preventDefault();
         setRegisterLoading(true);
         try {
-            await (window as any).electron.ipcRenderer.invoke('create-school', formData);
+            await invokeIPC('create-school', formData);
             toast.success("School registered successfully!");
             setIsRegisterOpen(false);
             setFormData({ name: '', slug: '', status: 'Active' });
@@ -157,62 +183,130 @@ export default function SuperAdminView() {
                 ))}
             </div>
 
-            <Card className="border-0 shadow-sm rounded-2xl overflow-hidden">
-                <CardHeader className="bg-slate-50 border-b border-slate-100">
-                    <CardTitle className="text-lg font-black text-slate-900">Recent Schools</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50/50 text-slate-500 text-xs font-bold uppercase">
-                                <tr>
-                                    <th className="px-6 py-4">School Name</th>
-                                    <th className="px-6 py-4">Slug</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {loading ? (
+            {activeTab === 'requests' ? (
+                <Card className="border-0 shadow-sm rounded-2xl overflow-hidden">
+                    <CardHeader className="bg-slate-50 border-b border-slate-100 flex flex-row items-center justify-between">
+                        <CardTitle className="text-lg font-black text-slate-900">Registration Pipeline</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-50/50 text-slate-500 text-xs font-bold uppercase">
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-slate-400 font-medium">
-                                            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 opacity-20" />
-                                            Loading school registry...
-                                        </td>
+                                        <th className="px-6 py-4">School Name</th>
+                                        <th className="px-6 py-4">Slug</th>
+                                        <th className="px-6 py-4">Request Date</th>
+                                        <th className="px-6 py-4 text-right">Actions</th>
                                     </tr>
-                                ) : recentSchools.length === 0 ? (
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-12 text-center text-slate-400 font-medium">
+                                                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 opacity-20" />
+                                                Loading pending requests...
+                                            </td>
+                                        </tr>
+                                    ) : registrationRequests.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-12 text-center text-slate-400 font-medium">
+                                                <div className="bg-slate-50 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                                                    <Check className="w-8 h-8 text-emerald-400" />
+                                                </div>
+                                                No pending registration requests.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        registrationRequests.map((req) => (
+                                            <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-6 py-4 font-bold text-slate-900">{req.name}</td>
+                                                <td className="px-6 py-4 font-mono text-xs text-slate-500">{req.slug}</td>
+                                                <td className="px-6 py-4 text-sm text-slate-500">
+                                                    {new Date(req.createdAt).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-6 py-4 text-right space-x-2">
+                                                    <Button 
+                                                        size="sm" 
+                                                        className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 font-bold"
+                                                        onClick={() => handleApproveRequest(req.id)}
+                                                    >
+                                                        Approve
+                                                    </Button>
+                                                    <Button 
+                                                        size="sm" 
+                                                        variant="outline" 
+                                                        className="text-red-600 hover:text-red-700 font-bold border-red-200"
+                                                        onClick={() => handleRejectRequest(req.id)}
+                                                    >
+                                                        Reject
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
+            ) : (
+                <Card className="border-0 shadow-sm rounded-2xl overflow-hidden">
+                    <CardHeader className="bg-slate-50 border-b border-slate-100 flex flex-row items-center justify-between">
+                        <CardTitle className="text-lg font-black text-slate-900">Recent Schools</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-50/50 text-slate-500 text-xs font-bold uppercase">
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-slate-400 font-medium">
-                                            No institutions registered yet.
-                                        </td>
+                                        <th className="px-6 py-4">School Name</th>
+                                        <th className="px-6 py-4">Slug</th>
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4 text-right">Actions</th>
                                     </tr>
-                                ) : recentSchools.map((school, i) => (
-                                    <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-6 py-4 font-bold text-slate-900">{school.name}</td>
-                                        <td className="px-6 py-4 text-sm font-medium text-slate-500">
-                                            <code className="bg-slate-100 px-2 py-0.5 rounded text-xs">{school.slug}</code>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${school.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                {school.status || 'Active'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Button 
-                                                variant="ghost" 
-                                                className="text-emerald-600 font-bold hover:bg-emerald-50 flex items-center justify-end w-full gap-2"
-                                                onClick={() => window.open(`/${school.slug}`, '_blank')}
-                                            >
-                                                Dashboard <ExternalLink className="w-4 h-4" />
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
-            </Card>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-12 text-center text-slate-400 font-medium">
+                                                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 opacity-20" />
+                                                Loading school registry...
+                                            </td>
+                                        </tr>
+                                    ) : recentSchools.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-12 text-center text-slate-400 font-medium">
+                                                No institutions registered yet.
+                                            </td>
+                                        </tr>
+                                    ) : recentSchools.map((school, i) => (
+                                        <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-6 py-4 font-bold text-slate-900">{school.name}</td>
+                                            <td className="px-6 py-4 text-sm font-medium text-slate-500">
+                                                <code className="bg-slate-100 px-2 py-0.5 rounded text-xs">{school.slug}</code>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${school.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                    {school.status || 'Active'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    className="text-emerald-600 font-bold hover:bg-emerald-50 flex items-center justify-end w-full gap-2"
+                                                    onClick={() => window.open(`/${school.slug}`, '_blank')}
+                                                >
+                                                    Dashboard <ExternalLink className="w-4 h-4" />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     )
 }

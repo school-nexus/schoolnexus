@@ -4,10 +4,10 @@ import { useParams } from 'next/navigation';
 import { Suspense, useMemo } from 'react';
 
 // 1. Platform Views (Root Level)
-const LandingPage = dynamic(() => import('../landing-page-content'), { ssr: false });
-const LoginPage = dynamic(() => import('../login/login-page-content').then(mod => mod.LoginPageContent), { ssr: false });
-const SetupPage = dynamic(() => import('../setup/setup-page-content').then(mod => mod.SetupPageContent), { ssr: false });
-const SchoolLoginPage = dynamic(() => import('../school-login/school-login-content'), { ssr: false });
+const LandingPage = dynamic(() => import('../../components/pages/landing-page-content'), { ssr: false });
+const LoginPage = dynamic(() => import('../../components/pages/login/login-page-content').then(mod => mod.LoginPageContent), { ssr: false });
+const SetupPage = dynamic(() => import('../../components/pages/setup/setup-page-content').then(mod => mod.SetupPageContent), { ssr: false });
+const SchoolLoginPage = dynamic(() => import('../../components/pages/school-login/school-login-content'), { ssr: false });
 
 // 2. Dashboard Views (Scoped)
 const DashboardLayout = dynamic(() => import('@/components/layout/dashboard-layout').then(mod => mod.DashboardLayout), { ssr: false });
@@ -76,6 +76,12 @@ const viewMap: Record<string, any> = {
     'teachers': dynamic(() => import('@/app/[slug]/(dashboard)/teachers/view'), { ssr: false }),
     'super-admin': dynamic(() => import('../super-admin/view'), { ssr: false }),
     'super-admin/subscriptions': dynamic(() => import('../super-admin/subscriptions/view'), { ssr: false }),
+    'super-admin/users': dynamic(() => import('../super-admin/users/view'), { ssr: false }),
+    'super-admin/users/roles': dynamic(() => import('../super-admin/users/roles/view'), { ssr: false }),
+    'super-admin/logs': dynamic(() => import('../super-admin/logs/view'), { ssr: false }),
+    'super-admin/backups': dynamic(() => import('../super-admin/backups/view'), { ssr: false }),
+    'super-admin/analytics': dynamic(() => import('../super-admin/analytics/view'), { ssr: false }),
+    'super-admin/settings': dynamic(() => import('../super-admin/settings/view'), { ssr: false }),
 };
 
 export default function ClientRouter(props: any) {

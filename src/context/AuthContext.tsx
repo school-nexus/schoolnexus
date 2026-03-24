@@ -1,24 +1,20 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
-import { userActions } from "@/lib/electron"
+import { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { userActions, invokeIPC } from "@/lib/electron"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { comparePassword } from "@/lib/auth-utils"
+import { User } from "@/lib/types"
 
-interface User {
-    id: number
-    username: string
-    fullName: string
-    role: string
-    email: string
-}
+
 
 interface AuthContextType {
     user: User | null
     isLoading: boolean
-    login: (username: string, password: string, redirectTo?: string) => Promise<void>
+    login: (username: string, password: string, schoolId?: number, redirectTo?: string) => Promise<void>
     logout: () => void
+    refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -48,39 +44,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => clearTimeout(timer)
     }, [])
 
-    const login = async (username: string, password: string, redirectTo?: string) => {
-        setIsLoading(true)
+    const login = async (username: string, password: string, schoolId?: number, redirectTo?: string) => {
+        setIsLoading(true);
         try {
-            const users = await userActions.getAll()
-            const foundUser = users.find((u: any) => u.username === username)
+            // Use unified login handler instead of raw getAll + client check
+            const foundUser = await invokeIPC<User | null>('login-user', { 
+                username, 
+                password, 
+                schoolId 
+            });
 
-            if (foundUser && foundUser.password && await comparePassword(password, foundUser.password as string)) {
-                setUser(foundUser as any)
-                localStorage.setItem("school_nexus_user", JSON.stringify(foundUser))
+            if (foundUser) {
+                setUser(foundUser);
+                localStorage.setItem("school_nexus_user", JSON.stringify(foundUser));
+                
                 // Set cookies for middleware protection
-                document.cookie = `school_nexus_session=${foundUser.id}; path=/; max-age=86400; SameSite=Lax`
-                document.cookie = `school_nexus_role=${foundUser.role || 'user'}; path=/; max-age=86400; SameSite=Lax`
+                document.cookie = `school_nexus_session=${foundUser.id}; path=/; max-age=86400; SameSite=Lax`;
+                document.cookie = `school_nexus_role=${foundUser.role || 'user'}; path=/; max-age=86400; SameSite=Lax`;
                 
-                toast.success(`Welcome back, ${foundUser.fullName}`)
+                toast.success(`Welcome back, ${foundUser.fullName}`);
                 
-                // Redirect logic
                 if (redirectTo) {
-                    router.push(redirectTo)
+                    router.push(redirectTo);
                 } else {
-                    router.push("/dashboard")
+                    router.push(foundUser.role === 'super_admin' ? "/super-admin" : "/dashboard");
                 }
             } else {
-                throw new Error("Invalid credentials")
+                throw new Error("Invalid credentials");
             }
         } catch (error: any) {
-            console.error("Login failed:", error)
-            // Only toast for unexpected errors, not for invalid credentials
+            console.error("Login failed:", error);
             if (error.message !== "Invalid credentials") {
-                toast.error("Login failed. Please try again.")
+                toast.error("Login failed. Please try again.");
             }
-            throw error
+            throw error;
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
     }
 
@@ -94,8 +93,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.success("Logged out successfully")
     }
 
+    const refreshUser = async () => {
+        const storedUser = localStorage.getItem("school_nexus_user")
+        if (storedUser) {
+            try {
+                setUser(JSON.parse(storedUser))
+            } catch (e) {
+                console.error("Failed to refresh user", e)
+            }
+        }
+    }
+
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     )

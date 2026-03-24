@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { Archive, BarChart3, Bell, BookOpen, Calendar, CalendarDays, ChevronRight, ClipboardList, CreditCard, Database, DollarSign, FileSpreadsheet, FileText, GraduationCap, HardDrive, LayoutDashboard, List, PanelLeftClose, PanelLeftOpen, Receipt, School, Settings, Shield, TrendingUp, Upload, UserCircle, UserPlus, Users, Wallet } from 'lucide-react';
 ;
 import { schoolProfileActions, userActions, fileActions } from '@/lib/electron';
 
-const navigation = [
+const schoolNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['admin', 'bursar', 'secretary', 'teacher'] },
     {
         name: 'Students',
@@ -133,6 +134,53 @@ const navigation = [
     },
 ];
 
+const superAdminNavigation = [
+    { name: 'Platform Overview', href: '/super-admin', icon: LayoutDashboard },
+    { 
+        name: 'Institutions', 
+        icon: School,
+        submenu: [
+            { name: 'School Registry', href: '/super-admin', icon: List },
+            { name: 'Registration Requests', href: '/super-admin?tab=requests', icon: UserPlus },
+        ]
+    },
+    {
+        name: 'Subscriptions',
+        icon: CreditCard,
+        submenu: [
+            { name: 'Plans & Pricing', href: '/super-admin/subscriptions', icon: List },
+            { name: 'Payment History', href: '/super-admin/subscriptions?tab=history', icon: Receipt },
+        ]
+    },
+    {
+        name: 'User Management',
+        icon: Users,
+        submenu: [
+            { name: 'All Platform Users', href: '/super-admin/users', icon: Users },
+            { name: 'Role Assignments', href: '/super-admin/users/roles', icon: Shield },
+        ]
+    },
+    {
+        name: 'System Control',
+        icon: Shield,
+        submenu: [
+            { name: 'System Logs', href: '/super-admin/logs', icon: FileText },
+            { name: 'Global Backups', href: '/super-admin/backups', icon: Database },
+        ]
+    },
+    {
+        name: 'Analytics',
+        href: '/super-admin/analytics',
+        icon: BarChart3
+    },
+    {
+        name: 'Platform Settings',
+        href: '/super-admin/settings',
+        icon: Settings
+    }
+];
+
+
 const menuVariants = {
     closed: { height: 0, opacity: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } },
     open: { height: 'auto', opacity: 1, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1], staggerChildren: 0.05 } }
@@ -147,19 +195,15 @@ const MotionDiv = motion.div as any;
 const MotionSpan = motion.span as any;
 
 export function Sidebar() {
+    const { user } = useAuth();
     const pathname = usePathname();
     const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [logoPath, setLogoPath] = useState<string | null>(null);
-    const [userRole, setUserRole] = useState<string>('admin');
+
+    const userRole = user?.role || 'admin';
 
     useEffect(() => {
-        const fetchUser = async () => {
-            const user = await userActions.getCurrentUser();
-            if (user?.role) setUserRole(user.role);
-        };
-        fetchUser();
-
         const fetchProfile = async () => {
             try {
                 const profile = await schoolProfileActions.get();
@@ -207,7 +251,11 @@ export function Sidebar() {
                             />
                         ) : (
                             <div className="h-full w-full rounded bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
-                                <School className="h-3 w-3 text-white" />
+                                {userRole === 'super_admin' ? (
+                                    <Shield className="h-3 w-3 text-white" />
+                                ) : (
+                                    <School className="h-3 w-3 text-white" />
+                                )}
                             </div>
                         )}
                     </div>
@@ -220,8 +268,12 @@ export function Sidebar() {
                                 transition={{ duration: 0.2 }}
                                 className="flex flex-col min-w-0 overflow-hidden"
                             >
-                                <span className="text-sm font-bold text-white truncate pl-2">School Nexus</span>
-                                <span className="text-[9px] text-green-300 truncate pl-2 uppercase tracking-tighter">Management</span>
+                                <span className="text-sm font-bold text-white truncate pl-2">
+                                    {userRole === 'super_admin' ? 'Nexus Platform' : 'School Nexus'}
+                                </span>
+                                <span className="text-[9px] text-green-300 truncate pl-2 uppercase tracking-tighter">
+                                    {userRole === 'super_admin' ? 'Control Center' : 'Management'}
+                                </span>
                             </MotionDiv>
                         )}
                     </AnimatePresence>
@@ -241,7 +293,7 @@ export function Sidebar() {
 
             <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700/30 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 transition-colors">
                 <nav className="space-y-0.5 px-2 py-3">
-                    {navigation.filter(item => !item.roles || item.roles.includes(userRole)).map((item) => {
+                    {(userRole === 'super_admin' ? superAdminNavigation : schoolNavigation.filter(item => !item.roles || item.roles.includes(userRole))).map((item) => {
                         const hasSubmenu = 'submenu' in item;
                         const isExpanded = hasSubmenu && isMenuExpanded(item.name);
                         const isActive = !hasSubmenu && pathname === item.href;

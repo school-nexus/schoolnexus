@@ -8,10 +8,12 @@ interface ConfirmationStepProps {
     onBack: () => void
     onComplete: () => void
     isSubmitting?: boolean
-    isPlatform?: boolean
+    mode?: 'electron' | 'web-platform' | 'web-school'
 }
 
-export function ConfirmationStep({ data, onBack, onComplete, isSubmitting, isPlatform = false }: ConfirmationStepProps) {
+export function ConfirmationStep({ data, onBack, onComplete, isSubmitting, mode = 'electron' }: ConfirmationStepProps) {
+    const isPlatform = mode === 'web-platform';
+    const isSchool = mode === 'electron' || mode === 'web-school';
     return (
         <div className="space-y-6">
             <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
@@ -27,7 +29,7 @@ export function ConfirmationStep({ data, onBack, onComplete, isSubmitting, isPla
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* School Profile Summary - ONLY FOR SCHOOL MODE */}
-                    {!isPlatform && (
+                    {isSchool && (
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <School className="h-4 w-4 text-emerald-500" />
@@ -62,7 +64,7 @@ export function ConfirmationStep({ data, onBack, onComplete, isSubmitting, isPla
                     )}
 
                     {/* Academic Calendar Summary - ONLY FOR SCHOOL MODE */}
-                    {!isPlatform && (
+                    {isSchool && (
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <Calendar className="h-4 w-4 text-emerald-500" />
@@ -119,13 +121,24 @@ export function ConfirmationStep({ data, onBack, onComplete, isSubmitting, isPla
                         </div>
                         <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold text-slate-900 capitalize">{isPlatform ? 'Cloudflare Edge' : data.database.mode + ' Database'}</span>
-                                <span className="bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold uppercase">D1 + R2</span>
+                                <span className="text-sm font-bold text-slate-900 capitalize">
+                                    {mode === 'electron' 
+                                        ? 'Local SQLite' 
+                                        : process.env.NEXT_PUBLIC_PLATFORM === 'local' 
+                                            ? 'Local SQLite (Dev)' 
+                                            : 'Cloud D1 (Cloudflare)'
+                                    }
+                                </span>
+                                <span className="bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold uppercase">
+                                    {mode === 'electron' ? 'OFFLINE' : process.env.NEXT_PUBLIC_PLATFORM === 'local' ? 'LOCAL-MULTI-TENANT' : 'D1 + R2'}
+                                </span>
                             </div>
                             <p className="text-[11px] text-slate-500 leading-relaxed italic">
                                 {isPlatform 
                                     ? "Platform-wide resources will be initialized for multi-tenant school scaling."
-                                    : "All data stored within your secure school database partition."
+                                    : mode === 'electron' 
+                                        ? "All data stored within your secure local database file."
+                                        : "All data stored within your secure cloud database partition."
                                 }
                             </p>
                         </div>
@@ -134,7 +147,10 @@ export function ConfirmationStep({ data, onBack, onComplete, isSubmitting, isPla
 
                 <div className="mt-10 p-5 bg-emerald-50 border border-emerald-100 rounded-2xl">
                     <p className="text-xs font-bold text-emerald-800 text-center">
-                        By clicking "Finish Setup", the system will seed your database and create your administrator account.
+                        {isPlatform 
+                            ? 'By clicking "Finish Setup", the system will initialize the platform database and create your super administrator account.'
+                            : 'By clicking "Finish Setup", the system will seed your database and create your administrator account.'
+                        }
                     </p>
                 </div>
             </div>

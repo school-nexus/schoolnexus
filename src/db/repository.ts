@@ -1,216 +1,192 @@
-import { eq, and, sql } from 'drizzle-orm';
 import { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
+import { academicYears, terms, schools, users } from './schema';
+import { hashPassword } from '@/lib/auth-utils';
+import { schoolsRepository, profileRepository, backupsRepository } from './repositories/schools';
+import { usersRepository, rolesRepository } from './repositories/users';
+import { platformRepository, subscriptionsRepository, systemLogsRepository } from './repositories/platform';
 import { 
-    schoolProfile, 
-    users, 
-    classes, 
-    students,
-    schools,
-    subscriptions,
-    subscriptionPlans,
-    settings,
-    academicYears,
-    terms
-} from './schema';
+    academicYearsRepository, 
+    termsRepository, 
+    classesRepository, 
+    streamsRepository 
+} from './repositories/academic';
+import { 
+    teachersRepository, 
+    teacherDocumentsRepository, 
+    studentsRepository, 
+    guardiansRepository, 
+    studentDocumentsRepository 
+} from './repositories/people';
+import { 
+    subjectsRepository, 
+    examTypesRepository, 
+    examsRepository, 
+    marksRepository, 
+    gradingScalesRepository 
+} from './repositories/exams';
+import { 
+    feeStructuresRepository, 
+    feeAssignmentsRepository, 
+    feePaymentsRepository, 
+    invoicesRepository, 
+    transactionCategoriesRepository, 
+    incomeRepository, 
+    expensesRepository, 
+    budgetRepository, 
+    payrollRepository, 
+    salaryPaymentsRepository 
+} from './repositories/finance';
+import { 
+    dashboardRepository, 
+    analyticsRepository, 
+    reportsRepository 
+} from './repositories/dashboard';
+import { 
+    settingsRepository, 
+    studentGroupsRepository, 
+    studentGroupMembersRepository 
+} from './repositories/settings';
 
 // Use a generic SQLite database type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DrizzleDB = BaseSQLiteDatabase<any, any, any, any>;
 
 export const repository = {
-    schools: {
-        getAll: async (db: DrizzleDB) => {
-            return await db.select().from(schools);
+    schools: schoolsRepository,
+    profile: profileRepository,
+    backups: backupsRepository,
+    users: usersRepository,
+    roles: rolesRepository,
+    platform: platformRepository,
+    subscriptions: subscriptionsRepository,
+    systemLogs: systemLogsRepository,
+    academicYears: academicYearsRepository,
+    terms: termsRepository,
+    classes: classesRepository,
+    streams: streamsRepository,
+    teachers: teachersRepository,
+    teacherDocuments: teacherDocumentsRepository,
+    students: studentsRepository,
+    guardians: guardiansRepository,
+    studentDocuments: studentDocumentsRepository,
+    subjects: subjectsRepository,
+    examTypes: examTypesRepository,
+    exams: examsRepository,
+    marks: marksRepository,
+    gradingScales: gradingScalesRepository,
+    feeStructures: feeStructuresRepository,
+    feeAssignments: feeAssignmentsRepository,
+    feePayments: feePaymentsRepository,
+    invoices: invoicesRepository,
+    transactionCategories: transactionCategoriesRepository,
+    income: incomeRepository,
+    expenses: expensesRepository,
+    budget: budgetRepository,
+    payroll: payrollRepository,
+    salaryPayments: salaryPaymentsRepository,
+    dashboard: dashboardRepository,
+    analytics: analyticsRepository,
+    reports: reportsRepository,
+    settings: settingsRepository,
+    studentGroups: studentGroupsRepository,
+    studentGroupMembers: studentGroupMembersRepository,
+    setup: {
+        hasCompleted: async (db: DrizzleDB, schoolId: number) => {
+            return await settingsRepository.hasCompleted(db, schoolId);
         },
-        getBySlug: async (db: DrizzleDB, slug: string) => {
-            const result = await db.select().from(schools).where(eq(schools.slug, slug)).limit(1);
-            return result[0] || null;
+        markAsCompleted: async (db: DrizzleDB, schoolId: number) => {
+            return await settingsRepository.update(db, 'setup_completed', 'true', schoolId, 'system');
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        create: async (db: DrizzleDB, data: any) => {
-            return await db.insert(schools).values(data).returning();
-        }
-    },
-    profile: {
-        get: async (db: DrizzleDB, schoolId: number) => {
-            const result = await db.select().from(schoolProfile).where(eq(schoolProfile.schoolId, schoolId)).limit(1);
-            return result[0] || null;
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        update: async (db: DrizzleDB, schoolId: number, data: any) => {
-            const existing = await db.select().from(schoolProfile).where(eq(schoolProfile.schoolId, schoolId)).limit(1);
-            if (existing.length > 0) {
-                return await db.update(schoolProfile).set(data).where(eq(schoolProfile.id, existing[0].id)).returning();
-            } else {
-                return await db.insert(schoolProfile).values({ ...data, schoolId }).returning();
+        saveInitialData: async (db: DrizzleDB, schoolId: number, data: any) => {
+            const { schoolInfo, academicYear, adminInfo } = data;
+
+            // 0. Ensure School record exists first (to avoid Foreign Key errors)
+            const schoolData = {
+                id: schoolId,
+                name: schoolInfo?.name || (schoolId === 1 ? 'Platform' : 'New School'),
+                slug: schoolId === 1 ? 'platform' : (schoolInfo?.slug || `school-${schoolId}`),
+            };
+
+            await db.insert(schools).values(schoolData).onConflictDoUpdate({
+                target: schools.id,
+                set: { name: schoolData.name, slug: schoolData.slug }
+            });
+
+            // 1. School Profile
+            if (schoolInfo && schoolInfo.name) {
+                const profileData = {
+                    name: schoolInfo.name,
+                    phone: schoolInfo.phone,
+                    email: schoolInfo.email,
+                    address: schoolInfo.address,
+                    motto: schoolInfo.motto,
+                    currency: schoolInfo.currency || 'UGX',
+                    website: schoolInfo.website,
+                    registrationNumber: schoolInfo.registrationNumber,
+                };
+                await profileRepository.update(db, schoolId, profileData);
             }
-        }
-    },
-    users: {
-        getAll: async (db: DrizzleDB, schoolId: number) => {
-            return await db.select().from(users).where(eq(users.schoolId, schoolId));
-        },
-        getByUsername: async (db: DrizzleDB, username: string, schoolId?: number) => {
-            const conditions = [eq(users.username, username)];
-            if (schoolId !== undefined) conditions.push(eq(users.schoolId, schoolId));
-            const result = await db.select().from(users).where(and(...conditions)).limit(1);
-            return result[0] || null;
-        },
-        create: async (db: DrizzleDB, data: any) => {
-            const hashedPassword = data.passwordHash || data.password; // Handle both
-            return await db.insert(users).values({
-                ...data,
-                passwordHash: hashedPassword,
-            }).returning();
-        },
-        hasSuperAdmin: async (db: DrizzleDB) => {
-            try {
-                const result = await db.select({ id: users.id })
-                    .from(users)
-                    .where(eq(users.role, 'super_admin'))
-                    .limit(1);
-                return result.length > 0;
-            } catch (error) {
-                return false;
+
+            // 2. Admin Account
+            if (adminInfo && adminInfo.username) {
+                const role = adminInfo.role || (schoolId === 1 ? 'super_admin' : 'admin');
+                const hashedPassword = await hashPassword(adminInfo.password);
+                const adminData = {
+                    fullName: adminInfo.fullName,
+                    username: adminInfo.username,
+                    email: adminInfo.email,
+                    passwordHash: hashedPassword,
+                    role,
+                    schoolId: role === 'super_admin' ? null : schoolId
+                };
+
+                await db.insert(users).values(adminData).onConflictDoUpdate({
+                    target: users.username,
+                    set: { 
+                        fullName: adminData.fullName, 
+                        email: adminData.email, 
+                        passwordHash: adminData.passwordHash,
+                        role: adminData.role 
+                    }
+                });
             }
-        }
-    },
-    settings: {
-        get: async (db: DrizzleDB, key: string, schoolId?: number) => {
-            const conditions = [eq(settings.key, key)];
-            if (schoolId !== undefined) conditions.push(eq(settings.schoolId, schoolId));
-            const result = await db.select().from(settings).where(and(...conditions)).limit(1);
-            return result[0] || null;
-        },
-        update: async (db: DrizzleDB, key: string, value: string, schoolId: number, category = 'general') => {
-            const existing = await db.select().from(settings).where(and(eq(settings.key, key), eq(settings.schoolId, schoolId))).limit(1);
-            if (existing.length > 0) {
-                return await db.update(settings).set({ value, category }).where(eq(settings.id, existing[0].id)).returning();
-            } else {
-                return await db.insert(settings).values({ key, value, schoolId, category }).returning();
-            }
-        },
-        hasCompletedSetup: async (db: DrizzleDB, schoolId?: number) => {
-            try {
-                if (!schoolId || schoolId === 1) { // Platform context
-                    const superAdminExists = await repository.users.hasSuperAdmin(db);
-                    if (!superAdminExists) return false;
-                    
-                    const platformSetting = await db.select().from(settings)
-                        .where(and(eq(settings.key, 'platform_setup_completed'), eq(settings.value, 'true')))
-                        .limit(1);
-                    return platformSetting.length > 0;
-                } else {
-                    // School context
-                    const schoolSetting = await db.select().from(settings)
-                        .where(and(
-                            eq(settings.key, 'setup_completed'), 
-                            eq(settings.value, 'true'),
-                            eq(settings.schoolId, schoolId)
-                        ))
-                        .limit(1);
-                    return schoolSetting.length > 0;
+
+            // 3. Academic Year & Terms - ONLY for schools (schoolId > 1)
+            if (schoolId > 1 && academicYear && academicYear.name) {
+                const yearData = {
+                    schoolId,
+                    name: academicYear.name,
+                    startDate: academicYear.startDate,
+                    endDate: academicYear.endDate,
+                    isActive: true
+                };
+                
+                // Using db directly for onConflict as repositories abstract it away sometimes
+                const [year] = await db.insert(academicYears).values(yearData).onConflictDoUpdate({
+                    target: [academicYears.id],
+                    set: yearData
+                }).returning();
+
+                if (year && (year as any).id && academicYear.terms) {
+                    for (const term of academicYear.terms) {
+                        const termData = {
+                            schoolId,
+                            academicYearId: (year as any).id,
+                            name: term.name,
+                            startDate: term.startDate,
+                            endDate: term.endDate,
+                            isActive: term.isActive
+                        };
+                        await db.insert(terms).values(termData).onConflictDoUpdate({
+                            target: [terms.id],
+                            set: termData
+                        });
+                    }
                 }
-            } catch (error) {
-                console.log("[Repository] Setup check failed, returning false");
-                return false;
             }
-        }
-    },
-    academicYears: {
-        update: async (db: DrizzleDB, schoolId: number, data: any) => {
-            if (data.id) {
-                return await db.update(academicYears).set(data).where(eq(academicYears.id, data.id)).returning();
-            }
-            return await db.insert(academicYears).values({ ...data, schoolId }).returning();
-        }
-    },
-    terms: {
-        update: async (db: DrizzleDB, schoolId: number, data: any) => {
-            if (data.id) {
-                return await db.update(terms).set(data).where(eq(terms.id, data.id)).returning();
-            }
-            return await db.insert(terms).values({ ...data, schoolId }).returning();
-        }
-    },
-    classes: {
-        getAll: async (db: DrizzleDB, schoolId: number) => {
-            return await db.select().from(classes).where(eq(classes.schoolId, schoolId));
-        }
-    },
-    students: {
-        getAll: async (db: DrizzleDB, schoolId: number) => {
-            return await db.select().from(students).where(eq(students.schoolId, schoolId));
-        }
-    },
-    subscriptions: {
-        getPlans: async (db: DrizzleDB) => {
-            return await db.select().from(subscriptionPlans);
-        },
-        createPlan: async (db: DrizzleDB, data: any) => {
-            return await db.insert(subscriptionPlans).values(data).returning();
-        },
-        getForSchool: async (db: DrizzleDB, schoolId: number) => {
-            return await db.select().from(subscriptions).where(eq(subscriptions.schoolId, schoolId));
-        },
-        getLatestBySchool: async (db: DrizzleDB, schoolId: number) => {
-            const result = await db.select().from(subscriptions)
-                .where(eq(subscriptions.schoolId, schoolId))
-                .orderBy(sql`${subscriptions.createdAt} DESC`)
-                .limit(1);
-            return result[0] || null;
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        create: async (db: DrizzleDB, data: any) => {
-            return await db.insert(subscriptions).values(data).returning();
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        update: async (db: DrizzleDB, schoolId: number, data: any) => {
-            const latest = await db.select().from(subscriptions)
-                .where(eq(subscriptions.schoolId, schoolId))
-                .orderBy(sql`${subscriptions.createdAt} DESC`)
-                .limit(1);
-            if (latest.length > 0) {
-                return await db.update(subscriptions).set(data).where(eq(subscriptions.id, latest[0].id)).returning();
-            } else {
-                return await db.insert(subscriptions).values({ ...data, schoolId }).returning();
-            }
-        },
-        getAll: async (db: DrizzleDB) => {
-            return await db.select().from(subscriptions);
-        }
-    },
-    dashboard: {
-        getStats: async (db: DrizzleDB, schoolId: number) => {
-            const [studentCount] = await db.select({ count: sql<number>`count(*)` }).from(students).where(eq(students.schoolId, schoolId));
-            const [teacherCount] = await db.select({ count: sql<number>`count(*)` }).from(users).where(and(eq(users.schoolId, schoolId), eq(users.role, 'teacher')));
-            const [classCount] = await db.select({ count: sql<number>`count(*)` }).from(classes).where(eq(classes.schoolId, schoolId));
-            
-            return {
-                totalStudents: studentCount.count || 0,
-                totalTeachers: teacherCount.count || 0,
-                totalClasses: classCount.count || 0,
-                totalRevenue: 0, // Placeholder for now
-            };
-        },
-        getChartsData: async (db: DrizzleDB, schoolId: number) => {
-            return {
-                performanceData: [
-                    { subject: 'Math', score: 75 },
-                    { subject: 'English', score: 82 },
-                    { subject: 'Science', score: 68 },
-                    { subject: 'Social', score: 90 },
-                ],
-                revenueTrends: [
-                    { month: 'Jan', revenue: 1200000 },
-                    { month: 'Feb', revenue: 1500000 },
-                    { month: 'Mar', revenue: 1100000 },
-                ],
-                activities: [
-                    { type: 'student', action: 'New Student Registered', name: 'John Doe', time: new Date().toISOString() },
-                    { type: 'payment', action: 'Fee Payment Received', name: 'Mary Smith', time: new Date().toISOString() },
-                ]
-            };
+
+            return { success: true };
         }
     }
 };

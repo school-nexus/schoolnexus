@@ -103,6 +103,14 @@ export const backups = sqliteTable('backups', {
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const systemLogs = sqliteTable('system_logs', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    action: text('action').notNull(),
+    actorId: integer('actor_id').references(() => users.id),
+    details: text('details'),
+    timestamp: text('timestamp').default(sql`CURRENT_TIMESTAMP`),
+});
+
 // --- ACADEMIC STRUCTURE ---
 
 export const classes = sqliteTable('classes', {

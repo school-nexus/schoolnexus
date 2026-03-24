@@ -1,8 +1,7 @@
 "use client"
-
 import { useEffect, useState } from "react"
-import { invokeIPC } from "@/lib/electron"
-import { LoginClient } from "@/app/login/login-client"
+import { invokeIPC, isElectron } from "@/lib/electron"
+import { LoginClient } from "./login-client"
 import { useRouter } from "next/navigation"
 
 interface LoginPageContentProps {
@@ -12,6 +11,8 @@ interface LoginPageContentProps {
 export function LoginPageContent({ slug = 'platform' }: LoginPageContentProps) {
     const isPlatform = slug === 'platform' || !slug
     const router = useRouter()
+    const [mode, setMode] = useState<'electron' | 'web-platform' | 'web-school'>('web-platform')
+    const [schoolInfo, setSchoolInfo] = useState<{ id?: number, name?: string }>({})
     const [setupStatus, setSetupStatus] = useState<{ loading: boolean, hasSetup: boolean | null, error: string | null }>({
         loading: true,
         hasSetup: null,
@@ -19,23 +20,35 @@ export function LoginPageContent({ slug = 'platform' }: LoginPageContentProps) {
     })
 
     useEffect(() => {
-        const verifySetup = async () => {
+        const detectModeAndVerifySetup = async () => {
             try {
-                // Use resilient invokeIPC instead of raw fetch
+                // 1. Detect Mode
+                const electron = isElectron();
+                const currentMode = electron ? 'electron' : (isPlatform ? 'web-platform' : 'web-school');
+                setMode(currentMode);
+
+                // 2. Fetch school info if in school mode
+                if (currentMode === 'web-school' && slug) {
+                    const school = await invokeIPC<any>('get-school-by-slug', slug);
+                    if (school) {
+                        setSchoolInfo({ id: school.id, name: school.name });
+                    }
+                }
+
+                // 3. Verify Setup
                 const hasSetup = await invokeIPC<boolean>('has-completed-setup');
                 setSetupStatus({ loading: false, hasSetup, error: null });
             } catch (err: any) {
                 console.error("[Login Content] Verification error:", err);
-                // If it's a database binding error, propagate it to show the helpful UI
                 if (err.message.includes("Database binding not found")) {
                     setSetupStatus({ loading: false, hasSetup: null, error: err.message });
                 } else {
-                    setSetupStatus({ loading: false, hasSetup: true, error: err.message }); // Fallback to showing login
+                    setSetupStatus({ loading: false, hasSetup: true, error: err.message });
                 }
             }
         }
-        verifySetup();
-    }, [slug]);
+        detectModeAndVerifySetup();
+    }, [slug, isPlatform]);
 
     if (setupStatus.loading) {
         return <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -84,7 +97,12 @@ export function LoginPageContent({ slug = 'platform' }: LoginPageContentProps) {
             <div className="bg-emerald-600 text-white text-[10px] font-bold py-1 px-4 text-center animate-pulse fixed top-0 w-full z-50">
                 ARCHITECTURE VERSION: NATIVE-PATH-V3 | CONTEXT: {isPlatform ? 'PLATFORM' : 'SCHOOL'} | SLUG: {slug} | CLIENT_OPTIMIZED
             </div>
-            <LoginClient isPlatform={isPlatform} schoolSlug={isPlatform ? '' : slug} />
+            <LoginClient 
+                mode={mode} 
+                schoolId={schoolInfo.id}
+                schoolName={schoolInfo.name}
+                schoolSlug={isPlatform ? '' : slug} 
+            />
         </>
     )
 }

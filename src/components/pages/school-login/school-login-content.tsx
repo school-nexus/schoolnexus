@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { invokeIPC } from "@/lib/electron"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
@@ -21,16 +22,7 @@ export default function SchoolLoginPageContent() {
         setError("")
         
         try {
-            const response = await fetch('/api/rpc', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    channel: 'get-school-by-slug',
-                    args: [slug]
-                })
-            });
-            
-            const school = await response.json();
+            const school = await invokeIPC<any>('get-school-by-slug', slug);
             
             if (school) {
                 router.push(`/${slug}/login`)

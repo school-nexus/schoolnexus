@@ -9,10 +9,16 @@ interface SetupPageContentProps {
 }
 
 export function SetupPageContent({ slug }: SetupPageContentProps) {
-    // Platform if slug is platform/setup/missing
+    // Detect environment and context
     const isPlatform = slug === 'platform' || slug === 'setup' || !slug || slug === 'null';
+    const isElectron = typeof window !== 'undefined' && window.process?.versions?.electron;
     
-    console.log("[Setup Page] Context Check:", { slug, isPlatform });
+    // Determine the unified setup mode
+    const mode: 'electron' | 'web-platform' | 'web-school' = isElectron 
+        ? 'electron' 
+        : (isPlatform ? 'web-platform' : 'web-school');
+    
+    console.log("[Setup Page] Context Check:", { slug, isPlatform, isElectron, mode });
     
     const [setupStatus, setSetupStatus] = useState<{ loading: boolean, hasSetup: boolean | null, error: string | null }>({
         loading: true,
@@ -39,11 +45,18 @@ export function SetupPageContent({ slug }: SetupPageContentProps) {
     }, [slug]);
 
     const handleSetupComplete = async (data: any, isInitialized?: boolean) => {
-        console.log("[Setup Page] Finalizing setup:", { data, isInitialized, isPlatform });
+        console.log("[Setup Page] Finalizing setup:", { data, isInitialized, mode });
         try {
-            const result = await invokeIPC('complete-setup', isPlatform ? 1 : 0);
+            // mode-aware completion logic
+            const result = await invokeIPC('complete-setup', { 
+                schoolId: isPlatform ? 1 : 0, // 1 is platform school, 0 is auto-detect or fresh
+                data: data 
+            });
+            
             if (result) {
-                window.location.href = isPlatform ? "/super-admin" : `/${slug}`;
+                // REDIRECTION RULE: 
+                // On completion: Redirect to Platform Login for platform, or School Dashboard for school
+                window.location.href = isPlatform ? "/login" : `/${slug}`;
             }
         } catch (error) {
             console.error("Setup completion failed:", error);
@@ -57,7 +70,9 @@ export function SetupPageContent({ slug }: SetupPageContentProps) {
     }
 
     if (setupStatus.hasSetup) {
-        window.location.href = isPlatform ? "/super-admin" : `/${slug}`;
+        // REDIRECTION RULE:
+        // If already setup: Redirect to Landing Page for platform, or School Dashboard for school
+        window.location.href = isPlatform ? "/" : `/${slug}`;
         return null;
     }
 
@@ -69,7 +84,7 @@ export function SetupPageContent({ slug }: SetupPageContentProps) {
             </div>
             <div className="flex-1 overflow-hidden">
                 <SetupWizard 
-                    isPlatform={isPlatform} 
+                    mode={mode} 
                     onComplete={handleSetupComplete} 
                 />
             </div>
