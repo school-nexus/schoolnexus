@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export const runtime = 'experimental-edge';
-
 export default function middleware(request: NextRequest) {
     const url = request.nextUrl;
     const pathname = url.pathname;

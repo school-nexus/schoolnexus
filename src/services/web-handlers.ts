@@ -96,7 +96,7 @@ export const handleWebRequest = async (db: unknown, channel: string, args: unkno
         }
         case 'reset-database': {
             const provider = (d1 as any).constructor.name.includes('D1') ? 'Cloudflare D1' : 'Local SQLite';
-            if (provider === 'Local SQLite') {
+            if (process.env.NEXT_PUBLIC_PLATFORM !== 'cloudflare' && provider === 'Local SQLite') {
                 try {
                     const { resetDatabase, initializeSQLite, getLocalDb } = await import('@/db/index-local');
                     // Reset (close & delete)
@@ -116,7 +116,7 @@ export const handleWebRequest = async (db: unknown, channel: string, args: unkno
         }
         case 'initialize-database': {
             const provider = (d1 as any).constructor.name.includes('D1') ? 'Cloudflare D1' : 'Local SQLite';
-            if (provider === 'Local SQLite') {
+            if (process.env.NEXT_PUBLIC_PLATFORM !== 'cloudflare' && provider === 'Local SQLite') {
                 try {
                     const { initializeSQLite, getLocalDb } = await import('@/db/index-local');
                     // Ensure internal instance is connected
