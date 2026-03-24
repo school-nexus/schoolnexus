@@ -72,16 +72,17 @@ export function DatabaseSetupStep({
             {mode === 'web-platform' && (
                 <div className="bg-white rounded-3xl p-8 border-2 border-emerald-500 shadow-md ring-4 ring-emerald-500/10 flex flex-col items-center text-center">
                     <div className="h-16 w-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center mb-4 shadow-lg shadow-emerald-200">
-                        {process.env.NEXT_PUBLIC_PLATFORM === 'local' ? <Database className="h-8 w-8" /> : <Globe className="h-8 w-8" />}
+                        {(process.env.NEXT_PUBLIC_PLATFORM === 'local' && !window.location.hostname.includes('workers.dev')) ? <Database className="h-8 w-8" /> : <Globe className="h-8 w-8" />}
                     </div>
                     <h4 className="font-bold text-slate-900 mb-2 text-lg">
-                        {process.env.NEXT_PUBLIC_PLATFORM === 'local' ? 'Local Infrastructure (SQLite)' : 'Cloud Infrastructure (D1)'}
+                        {(process.env.NEXT_PUBLIC_PLATFORM === 'local' && !window.location.hostname.includes('workers.dev')) ? 'Local Infrastructure (SQLite)' : 'Cloud Infrastructure (D1)'}
                     </h4>
                     <p className="text-sm text-slate-500 leading-relaxed max-w-md">
-                        {process.env.NEXT_PUBLIC_PLATFORM === 'local' 
+                        {(process.env.NEXT_PUBLIC_PLATFORM === 'local' && !window.location.hostname.includes('workers.dev')) 
                             ? 'The platform is currently running in local development mode using a persistent SQLite database for multi-tenant architecture testing.'
                             : 'The platform is configured to use Cloudflare D1 for real-time global availability and edge-rendered performance.'}
                     </p>
+
                 </div>
             )}
 
