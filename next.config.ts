@@ -30,16 +30,13 @@ const nextConfig: NextConfig = {
   },
   
   // External packages for server components
-  serverExternalPackages: [
+  // CRITICAL: NextJS will not bundle these and emit require() instead.
+  // Cloudflare Edge workers MUST bundle all modules, so we only externalize natively in local Electron.
+  serverExternalPackages: process.env.NEXT_PUBLIC_PLATFORM === 'cloudflare' ? [] : [
       'better-sqlite3',
       'sqlite3',
       'electron',
-      'bcryptjs',
-      'jsonwebtoken',
-      'postgres',
-      'xlsx',
-      'jspdf',
-      'html2canvas'
+      'postgres'
   ],
   
   // Image optimization
