@@ -1,7 +1,11 @@
 name = "schoolnexuspro"
-pages_build_output_dir = ".vercel/output/static"
-compatibility_date = "2024-04-01"
-compatibility_flags = ["nodejs_compat"]
+main = ".open-next/worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
 
 [vars]
 NEXT_PUBLIC_PLATFORM = "cloudflare"

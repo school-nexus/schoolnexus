@@ -14,8 +14,8 @@ export const getDb = async () => {
         if (cachedDb) return cachedDb;
         // Production: Use Cloudflare D1 binding
         try {
-            const { getRequestContext } = await import('@cloudflare/next-on-pages');
-            const context = getRequestContext();
+            const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+            const context = await getCloudflareContext();
             if (context?.env?.DB) {
                 const { drizzle } = await import('drizzle-orm/d1');
                 const schema = await import('./schema');

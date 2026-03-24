@@ -11,8 +11,8 @@ declare global {
   }
 }
 
-// NextJS Cloudflare context type
-declare module '@cloudflare/next-on-pages' {
+// OpenNext Cloudflare context type
+declare module '@opennextjs/cloudflare' {
   interface CloudflareInternalEnv extends CloudflareEnv {}
 }
 
