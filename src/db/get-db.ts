@@ -30,8 +30,12 @@ export const getDb = async () => {
     }
 
     // Local development: Use local SQLite via better-sqlite3
-    // We don't cache locally in getDb because getLocalDb() handles its own singleton 
-    // and supports closing/reopening (e.g. during reset)
-    const { getLocalDb } = await import('./index-local');
-    return getLocalDb();
+    if (process.env.NEXT_PUBLIC_PLATFORM !== 'cloudflare') {
+        // We don't cache locally in getDb because getLocalDb() handles its own singleton 
+        // and supports closing/reopening (e.g. during reset)
+        const { getLocalDb } = await import('./index-local');
+        return getLocalDb();
+    }
+
+    throw new Error('Database initialization failed due to unknown environment.');
 };
