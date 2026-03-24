@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/db/get-db';
 import { handleWebRequest } from '@/services/web-handlers';
 
-// Use Node.js runtime to support local SQLite (better-sqlite3)
-export const runtime = 'nodejs';
+// Use Edge runtime for Cloudflare compatibility
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
     try {
